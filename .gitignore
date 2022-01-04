@@ -350,5 +350,5 @@ MigrationBackup/
 
 
 # Build directories
-.bin
-.out
+BlockGame/bin/
+BlockGame/out/

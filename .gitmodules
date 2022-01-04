@@ -1,0 +1,3 @@
+[submodule "BlockGame/Vendor/glfw"]
+	path = BlockGame/Vendor/glfw
+	url = https://github.com/glfw/glfw
