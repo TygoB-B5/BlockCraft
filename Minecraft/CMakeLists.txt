@@ -1,8 +1,16 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 project ("Minecraft")
 
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+# Set Build Type
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+endif()
 
-find_package("OpenGL" REQUIRED)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+endif()
 
-add_executable (Minecraft "Minecraft.cpp" "Minecraft.h")
+add_subdirectory("Vendor/glfw")
+add_subdirectory("Vendor/glad")
+
+add_subdirectory("Engine/Core")

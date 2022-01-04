@@ -1,3 +1,0 @@
-C:/Users/tygo/Desktop/MinecraftCPP/Minecraft/Minecraft/out/build/x64-Release/CMakeFiles/edit_cache.dir
-C:/Users/tygo/Desktop/MinecraftCPP/Minecraft/Minecraft/out/build/x64-Release/CMakeFiles/Minecraft.dir
-C:/Users/tygo/Desktop/MinecraftCPP/Minecraft/Minecraft/out/build/x64-Release/CMakeFiles/rebuild_cache.dir
