@@ -1,0 +1,16 @@
+cmake_minimum_required (VERSION 3.8)
+project ("Core")
+
+file(GLOB CORE_SOURCES CONFIGURE_DEPENDS
+src/*.cpp
+src/*.h
+)
+
+add_executable(${PROJECT_NAME} ${CORE_SOURCES})
+	
+find_package(OpenGL REQUIRED)
+target_link_libraries(${PROJECT_NAME}
+OpenGL::GL
+glfw
+glad
+)
