@@ -1,6 +1,0 @@
-[submodule "BlockGame/Vendor/glfw"]
-	path = BlockGame/Vendor/glfw
-	url = https://github.com/glfw/glfw
-[submodule "BlockGame/Vendor/glm"]
-	path = BlockGame/Vendor/glm
-	url = https://github.com/g-truc/glm
