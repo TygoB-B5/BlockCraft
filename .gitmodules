@@ -1,0 +1,6 @@
+[submodule "BlockGame/Engine/Vendor/glm"]
+	path = BlockGame/Engine/Vendor/glm
+	url = https://github.com/g-truc/glm
+[submodule "BlockGame/Engine/Vendor/glfw"]
+	path = BlockGame/Engine/Vendor/glfw
+	url = https://github.com/glfw/glfw
