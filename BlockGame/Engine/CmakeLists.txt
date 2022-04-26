@@ -1,21 +1,20 @@
 cmake_minimum_required (VERSION 3.8)
-project ("Engine")
-
-# Set Build Type
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+project ("engine")
 
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS
-Core/*.cpp
-Core/*.h
+src/*.cpp
+src/*.h
+
+include/*.h
 )
 
-add_executable(${PROJECT_NAME} ${ENGINE_SOURCES})
-
 # Vendor directories
-add_subdirectory("Vendor/glfw")
-add_subdirectory("Vendor/glad")
-add_subdirectory("Vendor/glm")
-add_subdirectory("Vendor/stb_image")
+add_subdirectory("vendor/glfw")
+add_subdirectory("vendor/glad")
+add_subdirectory("vendor/glm")
+add_subdirectory("vendor/stb_image")
+
+add_library(${PROJECT_NAME} STATIC ${ENGINE_SOURCES})
 
 find_package(OpenGL REQUIRED)
 
@@ -27,3 +26,6 @@ glm
 stb_image
 )
 
+target_include_directories(${PROJECT_NAME} 
+PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)

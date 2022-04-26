@@ -1,0 +1,15 @@
+cmake_minimum_required (VERSION 3.8)
+project("BlockCraft")
+
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
+
+add_subdirectory(engine)
+
+file(GLOB MCR_SOURCES CONFIGURE_DEPENDS
+game/src/*.cpp
+game/src/*.h
+)
+
+add_executable(${PROJECT_NAME} ${MCR_SOURCES})
+
+target_link_libraries(${PROJECT_NAME} engine)
