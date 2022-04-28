@@ -3,6 +3,8 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
+
+
 const char* vertexShaderSource = R"(
 
 #version 330 core
@@ -19,7 +21,8 @@ void main()
 
 )";
 
-// Basic fragment shader
+
+
 const char* fragmentShaderSource = R"(
 
 #version 330 core
@@ -37,81 +40,62 @@ void main()
 
 
 
+float vertices[4 * 5] = {
+-0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
+ 0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
+-0.5f,  0.5f, 0.0f,  0.0f, 1.0f,
+ 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
+};
+
+
+
+uint32_t indices[3 * 2]
+{
+	0, 1, 2, 2, 1, 3
+};
+
+
 
 int main()
 {
-	engine::renderer r(engine::window(1000, 1000, "My window"), engine::rendererSettings());
+	engine::renderer renderer(engine::window(1000, 1000, "My window"), engine::rendererSettings());
 
-	float vertices[4 * 5] = {
-	-0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
-	 0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f, 0.0f,  0.0f, 1.0f,	
-	 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
-	};
+	renderer.init();
 
-	uint32_t indices[3 * 2]
-	{
-		0, 1, 2, 2, 1, 3
-	};
+	engine::renderer::vertexBuffer vertBuffer(&vertices[0], 20);
 
+	engine::renderer::shader shader(vertexShaderSource, fragmentShaderSource);
 
-	r.init();
+	engine::renderer::texture texture("test.jpg");
 
-	// Generate vertex buffer object (VBO) and vertex array object (VAO)
-	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-
-
-	// Bind VAO, then bind VBO
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-
-	// Copy the vertex data into the buffer's memory
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-	glBindVertexArray(VAO);
-	
-	engine::renderer::shader shader;
-	shader.compileShader(vertexShaderSource, fragmentShaderSource);
-	shader.bindShader();
+	engine::renderer::elementBuffer elemBuffer(&indices[0], 6);
 
 	engine::renderer::vertexLayout<2> s;
 	s.Amount[0] = 3;
 	s.Amount[1] = 2;
-
 	s.DataType[0] = GL_FLOAT;
 	s.DataType[1] = GL_FLOAT;
-
 	s.Stride = 5 * sizeof(float);
 
 
-	r.setVertexLayout(s);
+	renderer.setVertexLayout(s);
 
-	r.setTexture(0, "test.jpg");
 
-	// Unbind so other calls won't modify VBO and VAO
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	vertBuffer.unbind();
+	shader.unbind();
+	elemBuffer.unbind();
 
-	while (!glfwWindowShouldClose(r._window.get())) {
+	while (!glfwWindowShouldClose(renderer.getWindow()->getGlfwWindow()))
+	{
+		renderer.clear();
+		texture.bind();
+		shader.bind();
+		vertBuffer.bind();
+		elemBuffer.bind();
 
-		r.clear();
+		renderer.draw();
 
-		shader.bindShader();
-		glBindVertexArray(VAO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		r.draw();
-
-		r._window.swapBuffer();
+		renderer.getWindow()->swapBuffer();
 		glfwPollEvents();
 	}
 

@@ -20,11 +20,7 @@
 	4. Bind the neccesary textures. (using texture slots might be handy but I dont think it is neccesary if you use a texture atlas.)
 	5. Draw all elements
 
-	This requires some stuff tho:
-	Data container for Textures, Shaders, VAO, VBO, EBO
-	Abstraction for all of those things. (already did Textures and Shaders)
-
-	I also need to deal with the Input bs.
+	Need to deal with the Input bs.
 
 */
 
@@ -85,7 +81,7 @@ namespace engine
 
 
 		// Returns the GLFWwindow ptr.
-		GLFWwindow* get() const
+		GLFWwindow* getGlfwWindow() const
 		{
 			return _window;
 		}
@@ -125,12 +121,23 @@ namespace engine
 		{
 		public:
 
-			void bindShader()
+			shader(const char* vertexSrc = nullptr, const char* fragmentSrc = nullptr)
+				: _id(0)
 			{
-				assert(!(_id == 0), "Shader is not compiled.");
-				glUseProgram(_id);
+
+				// Compile shader if src is given.
+				if (!(vertexSrc == nullptr && fragmentSrc == nullptr))
+				{
+					compileShader(vertexSrc, fragmentSrc);
+				}
+
 			}
 
+			~shader()
+			{
+				// Delete shader.
+				glDeleteProgram(_id);
+			}
 
 			void compileShader(const char* vertexSrc, const char* fragmentSrc)
 			{
@@ -209,6 +216,19 @@ namespace engine
 
 			}
 
+			void bind() const
+			{
+				assert(!(_id == 0), "Shader is not compiled.");
+
+				// Bind
+				glUseProgram(_id);
+			}
+
+			void unbind()
+			{
+				// Unbind shader.
+				glUseProgram(0);
+			}
 
 		private:
 
@@ -217,12 +237,181 @@ namespace engine
 
 		class texture
 		{
-			// TODO
+		public:
+
+			texture(const char* filename)
+			{
+
+				// Create texture.
+				glCreateTextures(GL_TEXTURE_2D, 1, &_id);
+
+
+				// Set texture if filename exists
+				if (filename)
+				{
+					setTexture(filename);
+				}
+			}
+
+			~texture()
+			{
+				// Delete texture.
+				glDeleteTextures(1, &_id);
+			}
+
+			void setTexture(const char* filename)
+			{
+
+				// Load image.
+				int width, height, nrChannels;
+				stbi_set_flip_vertically_on_load(1);
+				unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+				assert(!(data == NULL), "Texture file not found!");
+
+				bind();
+
+				// Set texture filter settings.
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+				// Print path the image was found in.
+				DEBUG_ONLY(std::cout << "Texture found:  " << std::filesystem::current_path() << "\\" << filename << "\n");
+
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+				glGenerateMipmap(GL_TEXTURE_2D);
+
+
+				// Free image data.
+				stbi_image_free(data);
+			}
+
+			void bind() const
+			{
+				// Bind texture.
+				glBindTexture(GL_TEXTURE_2D, _id);
+			}
+
+			void unbind() const
+			{
+				// Unbind texture.
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+
+		private:
+			
+			uint32_t _id;
 		};
 
-		class vertex
+		class vertexBuffer
 		{
+		public:
+			vertexBuffer(const float* vertices, uint32_t elements) 
+				: _vboId(0), _vaoId(0)
+			{
 
+				// Generate buffer and array.
+				glGenVertexArrays(1, &_vaoId);
+				glGenBuffers(1, &_vboId);
+
+				// Set vertex data if used as a parameter.
+				if (vertices)
+				{
+					setVertexData(vertices, elements);
+				}
+
+			}
+
+			~vertexBuffer()
+			{
+				// Delete buffer and vertex array
+				glDeleteBuffers(1, &_vboId);
+				glDeleteVertexArrays(1, &_vaoId);
+			}
+
+			void setVertexData(const float* vertices, uint32_t elements) const
+			{
+
+				// Bind VAO, then bind VBO.
+				glBindBuffer(GL_ARRAY_BUFFER, _vboId);
+				bind();
+
+
+				// Copy the vertex data into the buffer's memory
+				glBufferData(GL_ARRAY_BUFFER, elements * sizeof(float), vertices, GL_STATIC_DRAW);
+
+			}
+
+			// Binds the vertex array.
+			void bind() const
+			{
+				// Bind vao
+				glBindVertexArray(_vaoId);
+			}
+
+			void unbind() const
+			{
+				// Unbind buffer.
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
+
+		private:
+
+			uint32_t _vboId;
+			uint32_t _vaoId;
+		};
+
+		class elementBuffer
+		{
+		public:
+			elementBuffer(const uint32_t* indices, uint32_t elements)
+				: _id(0)
+			{
+
+				// Generate buffer.
+				glGenBuffers(1, &_id);
+
+				// Set vertex data if used as a parameter.
+				if (indices)
+				{
+					setElementData(indices, elements);
+				}
+
+			}
+
+			~elementBuffer()
+			{
+				// Delete buffer.
+				glDeleteBuffers(1, &_id);
+			}
+
+			void setElementData(const uint32_t* indices, uint32_t elements) const
+			{
+
+				// Bind EBO
+				bind();
+
+				// Copy the index data into the buffer's memory
+				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+
+			}
+
+			// Binds the element array.
+			void bind() const
+			{
+				// Bind vao
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
+			}
+
+			void unbind() const
+			{
+				// Bind vao
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+			}
+
+		private:
+
+			uint32_t _id;
 		};
 
 
@@ -236,10 +425,11 @@ namespace engine
 				assert(false,"Failed to initialize GLAD");
 			}
 
+
 			// Get window width and height.
 			int width = 0;
 			int height = 0;
-			glfwGetWindowSize(_window.get(), &width, &height);
+			glfwGetWindowSize(_window.getGlfwWindow(), &width, &height);
 
 			assert(!(width <= 0 || height <= 0), "Window size is 0.");
 
@@ -251,7 +441,7 @@ namespace engine
 
 		}
 
-		uint32_t glDatatypeSize(uint32_t type)
+		uint32_t glDatatypeSize(uint32_t type) const
 		{
 
 			// Return size in bytes from Opengl datatype.
@@ -275,8 +465,9 @@ namespace engine
 		};
 
 		template <int S>
-		void setVertexLayout(const vertexLayout<S>& layout)
+		void setVertexLayout(const vertexLayout<S>& layout) const
 		{
+
 			uint32_t offset = 0;
 
 			// Set stride and vertex layout.
@@ -287,55 +478,12 @@ namespace engine
 
 				offset += glDatatypeSize(layout.DataType[i]) * layout.Amount[i];
 			}
-		}
-
-
-		void setTexture(uint32_t slot, const char* filename)
-		{	
-
-			// Load image.
-			int width, height, nrChannels;
-			stbi_set_flip_vertically_on_load(1);
-			unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
-
-			assert(!(data == NULL), "Texture file not found!");
-
-
-			// Print path the image was foudn in
-			DEBUG_ONLY(std::cout << "Texture found:  " << std::filesystem::current_path() << "\\" << filename << "\n");
-
-
-			// Create texture and assign data.
-			unsigned int texture;
-			glCreateTextures(GL_TEXTURE_2D, 1, &texture);
-			glBindTexture(GL_TEXTURE_2D, texture);
-
-			// Set texture filter settings.
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-			glGenerateMipmap(GL_TEXTURE_2D);
-
-
-			// Free image data.
-			stbi_image_free(data);
-
-			_activeTexture = texture;
 
 		}
 
-		void bindActiveTexture()
+		void clear() const
 		{
-			glBindTexture(GL_TEXTURE_2D, _activeTexture);
-		}
 
-		void addVertexElements();
-
-		
-		// Clears the frame buffer
-		void clear()
-		{
 			assert(_isInitialized, "Renderer is not initialized.");
 
 			// Clear buffer data.
@@ -349,18 +497,21 @@ namespace engine
 
 		}
 
-
-		void draw()
+		void draw() const
 		{
 			assert(_isInitialized, "Renderer is not initialized.");
 
 			// Draw Triangles
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
 
+		const window* getWindow() const
+		{
+			return &_window;
 		}
 
 
-	public:
+	private:
 		bool _isInitialized;
 
 		window _window;
@@ -368,9 +519,5 @@ namespace engine
 
 		uint32_t _shaderProgram;
 		uint32_t _activeTexture;
-
-		std::string _vertexShaderSource;
-		std::string _fragmentShaderSource;
-
 	};
 }
