@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 3.8)
 project ("engine")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+
 file(GLOB ENGINE_SOURCES CONFIGURE_DEPENDS
 src/*.cpp
 src/*.h

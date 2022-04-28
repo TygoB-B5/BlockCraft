@@ -30,7 +30,7 @@ uniform sampler2D uTexture;
 
 void main()
 {
-	FragColor = texture(uTexture, uTexCoord * 10);
+	FragColor = texture(uTexture, uTexCoord);
 }
 
 )";
@@ -45,7 +45,7 @@ int main()
 	float vertices[4 * 5] = {
 	-0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
 	 0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
-	-0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 
+	-0.5f,  0.5f, 0.0f,  0.0f, 1.0f,	
 	 0.5f,  0.5f, 0.0f,  1.0f, 1.0f,
 	};
 
@@ -77,14 +77,11 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 
-
-
 	glBindVertexArray(VAO);
-
-	// TODO The stupid shader doesn't attach to the program or something.
+	
 	engine::renderer::shader shader;
 	shader.compileShader(vertexShaderSource, fragmentShaderSource);
-	//shader.bindShader();
+	shader.bindShader();
 
 	engine::renderer::vertexLayout<2> s;
 	s.Amount[0] = 3;
@@ -94,6 +91,7 @@ int main()
 	s.DataType[1] = GL_FLOAT;
 
 	s.Stride = 5 * sizeof(float);
+
 
 	r.setVertexLayout(s);
 
@@ -108,7 +106,7 @@ int main()
 
 		r.clear();
 
-
+		shader.bindShader();
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		r.draw();

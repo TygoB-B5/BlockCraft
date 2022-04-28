@@ -37,6 +37,23 @@
 #include <array>
 #include <string>
 #include "stb_image.h"
+#include <filesystem>
+
+
+
+
+#ifdef _DEBUG
+	#define DEBUG_ONLY(expression) expression
+#else
+	#define DEBUG_ONLY(expression)
+#endif
+
+
+
+
+
+
+
 
 namespace engine
 {
@@ -276,10 +293,16 @@ namespace engine
 		void setTexture(uint32_t slot, const char* filename)
 		{	
 
-			// Load images.
+			// Load image.
 			int width, height, nrChannels;
 			stbi_set_flip_vertically_on_load(1);
 			unsigned char* data = stbi_load(filename, &width, &height, &nrChannels, 0);
+
+			assert(!(data == NULL), "Texture file not found!");
+
+
+			// Print path the image was foudn in
+			DEBUG_ONLY(std::cout << "Texture found:  " << std::filesystem::current_path() << "\\" << filename << "\n");
 
 
 			// Create texture and assign data.
@@ -330,9 +353,6 @@ namespace engine
 		void draw()
 		{
 			assert(_isInitialized, "Renderer is not initialized.");
-
-			// Use saved shader
-			glUseProgram(_shaderProgram);
 
 			// Draw Triangles
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
