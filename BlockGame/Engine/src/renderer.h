@@ -2,37 +2,18 @@
 
 
 /*
-	Things I might wanna change:
-
-	Not sure if using a renderer object is neccesary it might as well all be static or Singleton.
-	Change to a more OOP approach.
-
-
------------------------------------------------------------------------
-	I have no idea how I want to do to abstract this renderer lmao.
-
-	Some ideas:
-
-	The draw process:
-	1. Set the vertex layout.
-	2. Gather all the required vertex data. (e.g. the sides of blocks with texcoords and albedo. Maybe also normals but I dont know what they would be useful for doee.)
-	3. Bind the neccesary shader.
-	4. Bind the neccesary textures. (using texture slots might be handy but I dont think it is neccesary if you use a texture atlas.)
-	5. Draw all elements
-
-	Need to deal with the Input bs.
-
+	How to use
 */
 
 
 #include "glad/glad.h"
 #include <glfw/glfw3.h>
-#include "glm/glm.hpp"
 #include <iostream>
 #include <assert.h>
 #include <array>
-#include <string>
+#include <vector>
 #include "stb_image.h"
+#include "glm/glm.hpp"
 #include <filesystem>
 
 
@@ -113,7 +94,7 @@ namespace engine
 	public:
 
 		renderer(const window& window, const rendererSettings& settings)
-			: _isInitialized(false), _window(window), _renderSettings(settings), _shaderProgram(0), _activeTexture(0)
+			: _window(window), _renderSettings(settings)
 		{}
 
 
@@ -235,6 +216,7 @@ namespace engine
 			uint32_t _id;
 		};
 
+
 		class texture
 		{
 		public:
@@ -303,11 +285,29 @@ namespace engine
 			uint32_t _id;
 		};
 
+
 		class vertexBuffer
 		{
 		public:
+
+			vertexBuffer(const std::vector<float>& vertices)
+				: _vboId(0), _vaoId(0), _vertexAmount(0)
+			{
+
+				// Generate buffer and array.
+				glGenVertexArrays(1, &_vaoId);
+				glGenBuffers(1, &_vboId);
+
+				// Set vertex data if used as a parameter.
+				if (!vertices.empty())
+				{
+					setVertexData(&vertices[0], vertices.size());
+				}
+
+			}
+
 			vertexBuffer(const float* vertices, uint32_t elements) 
-				: _vboId(0), _vaoId(0)
+				: _vboId(0), _vaoId(0), _vertexAmount(0)
 			{
 
 				// Generate buffer and array.
@@ -329,7 +329,7 @@ namespace engine
 				glDeleteVertexArrays(1, &_vaoId);
 			}
 
-			void setVertexData(const float* vertices, uint32_t elements) const
+			void setVertexData(const float* vertices, uint32_t elements)
 			{
 
 				// Bind VAO, then bind VBO.
@@ -340,6 +340,7 @@ namespace engine
 				// Copy the vertex data into the buffer's memory
 				glBufferData(GL_ARRAY_BUFFER, elements * sizeof(float), vertices, GL_STATIC_DRAW);
 
+				_vertexAmount = elements;
 			}
 
 			// Binds the vertex array.
@@ -355,17 +356,26 @@ namespace engine
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
 
+			uint32_t getVertexAmount() const
+			{
+				return _vertexAmount;
+			}
+
 		private:
 
 			uint32_t _vboId;
 			uint32_t _vaoId;
+			
+			uint32_t _vertexAmount;
 		};
+
 
 		class elementBuffer
 		{
 		public:
+
 			elementBuffer(const uint32_t* indices, uint32_t elements)
-				: _id(0)
+				: _id(0), _elementAmount(0)
 			{
 
 				// Generate buffer.
@@ -379,13 +389,28 @@ namespace engine
 
 			}
 
+			elementBuffer(const std::vector<uint32_t>& indices)
+				: _id(0), _elementAmount(0)
+			{
+
+				// Generate buffer.
+				glGenBuffers(1, &_id);
+
+				// Set vertex data if used as a parameter.
+				if (!indices.empty())
+				{
+					setElementData(&indices[0], indices.size());
+				}
+
+			}
+
 			~elementBuffer()
 			{
 				// Delete buffer.
 				glDeleteBuffers(1, &_id);
 			}
 
-			void setElementData(const uint32_t* indices, uint32_t elements) const
+			void setElementData(const uint32_t* indices, uint32_t elements)
 			{
 
 				// Bind EBO
@@ -394,6 +419,7 @@ namespace engine
 				// Copy the index data into the buffer's memory
 				glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 
+				_elementAmount = elements;
 			}
 
 			// Binds the element array.
@@ -409,9 +435,15 @@ namespace engine
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			}
 
+			uint32_t getElementAmount() const
+			{
+				return _elementAmount;
+			}
+
 		private:
 
 			uint32_t _id;
+			uint32_t _elementAmount;
 		};
 
 
@@ -437,19 +469,19 @@ namespace engine
 			// Set viewport to window size.
 			glViewport(0, 0, width, height);
 
-			_isInitialized = true;
-
 		}
 
-		uint32_t glDatatypeSize(uint32_t type) const
+		static uint32_t glDatatypeSize(uint32_t type)
 		{
 
 			// Return size in bytes from Opengl datatype.
 			switch (type)
 			{
-			case GL_FLOAT:  return 4;
-			case GL_INT:    return 4;
-			case GL_DOUBLE: return 8;
+			case GL_FLOAT:        return 4;
+			case GL_INT:          return 4;
+			case GL_DOUBLE:       return 8;
+			case GL_UNSIGNED_INT: return 4;
+
 			default: assert(false, "Datatype not implemented.");
 			}
 
@@ -458,33 +490,74 @@ namespace engine
 		template<int S>
 		struct vertexLayout
 		{
+		public:
+
+			void bind() const
+			{
+
+				uint32_t offset = 0;
+
+				// Set stride and vertex layout.
+				for (size_t i = 0; i < S; i++)
+				{
+					glEnableVertexAttribArray(i);
+					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
+
+					offset += glDatatypeSize(DataType[i]) * Amount[i];
+				}
+
+			}
+
 			std::array<uint32_t, S> Amount = { 0 };
 			std::array<uint32_t, S> DataType = { 0 };
 
 			uint32_t Stride = 0;
 		};
 
-		template <int S>
-		void setVertexLayout(const vertexLayout<S>& layout) const
+		struct vertexLayoutDynamic
 		{
+		public:
 
-			uint32_t offset = 0;
-
-			// Set stride and vertex layout.
-			for (size_t i = 0; i < S; i++)
+			vertexLayoutDynamic(uint32_t initialSize = 0)
 			{
-				glEnableVertexAttribArray(i);
-				glVertexAttribPointer(i, layout.Amount[i], layout.DataType[i], GL_FALSE, layout.Stride, (const void*)offset);
-
-				offset += glDatatypeSize(layout.DataType[i]) * layout.Amount[i];
+				setSize(initialSize);
 			}
 
-		}
+			void setSize(uint32_t size)
+			{
+				// Resize vectors to specified size.
+				Amount.resize(size);
+				DataType.resize(size);
+			}
+
+			void bind() const
+			{
+
+				uint32_t offset = 0;
+
+				// Set stride and vertex layout.
+				for (size_t i = 0; i < Amount.size(); i++)
+				{
+					glEnableVertexAttribArray(i);
+					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
+
+					offset += glDatatypeSize(DataType[i]) * Amount[i];
+				}
+
+			}
+
+
+		public:
+
+			std::vector<uint32_t> Amount = { 0 };
+			std::vector<uint32_t> DataType = { 0 };
+
+			uint32_t Stride = 0;
+		};
+
 
 		void clear() const
 		{
-
-			assert(_isInitialized, "Renderer is not initialized.");
 
 			// Clear buffer data.
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -497,12 +570,10 @@ namespace engine
 
 		}
 
-		void draw() const
+		void draw(uint32_t elements) const
 		{
-			assert(_isInitialized, "Renderer is not initialized.");
-
 			// Draw Triangles
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, elements, GL_UNSIGNED_INT, 0);
 		}
 
 		const window* getWindow() const
@@ -512,12 +583,8 @@ namespace engine
 
 
 	private:
-		bool _isInitialized;
 
 		window _window;
 		rendererSettings _renderSettings;
-
-		uint32_t _shaderProgram;
-		uint32_t _activeTexture;
 	};
 }

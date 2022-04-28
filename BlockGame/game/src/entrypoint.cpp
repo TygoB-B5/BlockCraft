@@ -1,8 +1,4 @@
-﻿#include <iostream>
-#include "engine.h"
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
-
+﻿#include "engine.h"
 
 
 const char* vertexShaderSource = R"(
@@ -40,7 +36,8 @@ void main()
 
 
 
-float vertices[4 * 5] = {
+std::vector<float> vertices
+{
 -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
  0.5f, -0.5f, 0.0f,  1.0f, 0.0f,
 -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,
@@ -49,7 +46,7 @@ float vertices[4 * 5] = {
 
 
 
-uint32_t indices[3 * 2]
+std::vector<uint32_t> indices
 {
 	0, 1, 2, 2, 1, 3
 };
@@ -70,6 +67,7 @@ int main()
 
 	engine::renderer::elementBuffer elemBuffer(&indices[0], 6);
 
+
 	engine::renderer::vertexLayout<2> s;
 	s.Amount[0] = 3;
 	s.Amount[1] = 2;
@@ -77,8 +75,7 @@ int main()
 	s.DataType[1] = GL_FLOAT;
 	s.Stride = 5 * sizeof(float);
 
-
-	renderer.setVertexLayout(s);
+	s.bind();
 
 
 	vertBuffer.unbind();
@@ -93,7 +90,7 @@ int main()
 		vertBuffer.bind();
 		elemBuffer.bind();
 
-		renderer.draw();
+		renderer.draw(elemBuffer.getElementAmount());
 
 		renderer.getWindow()->swapBuffer();
 		glfwPollEvents();
