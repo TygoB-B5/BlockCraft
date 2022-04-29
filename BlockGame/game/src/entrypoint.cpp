@@ -55,20 +55,22 @@ std::vector<uint32_t> indices
 
 int main()
 {
-	auto window = engine::window(1000, 1000, "My window");
-	engine::renderer renderer(window, engine::rendererSettings());
-	engine::input input(window);
+	auto window = sr::window(1000, 1000, "My window", true);
 
-	engine::renderer::vertexBuffer vertBuffer(&vertices[0], 20);
+	sr::renderer renderer(window, sr::renderer::rendererSettings({1.0f, 0.5f, 0.0f, 1.0f}));
+	sr::input input(window);
 
-	engine::renderer::shader shader(vertexShaderSource, fragmentShaderSource);
+	sr::renderer::vertexBuffer vertBuffer(&vertices[0], 20);
 
-	engine::renderer::texture texture("test.jpg");
+	sr::renderer::shader shader(vertexShaderSource, fragmentShaderSource);
 
-	engine::renderer::elementBuffer elemBuffer(&indices[0], 6);
+	sr::renderer::texture texture("test.jpg");
+	sr::renderer::texture texture2("test2.jpg");
+
+	sr::renderer::elementBuffer elemBuffer(&indices[0], 6);
 
 
-	engine::renderer::vertexLayout<2> s;
+	sr::renderer::vertexLayout<2> s;
 	s.Amount[0] = 3;
 	s.Amount[1] = 2;
 	s.DataType[0] = GL_FLOAT;
@@ -82,18 +84,27 @@ int main()
 	shader.unbind();
 	elemBuffer.unbind();
 
+	int i = 0;
+	int b = 0;
 	while (!glfwWindowShouldClose(renderer.getWindow()->getGlfwWindow()))
 	{
 		renderer.clear();
 
+		b++;
+		if(b % 100 == 0)
+			i++;
+
+		if(i % 2 == 0)
 		texture.bind();
+		else
+			texture2.bind();
+
 		shader.bind();
 		vertBuffer.bind();
 		elemBuffer.bind();
 		renderer.draw(elemBuffer.getElementAmount());
 
-		renderer.getWindow()->swapBuffer();
-		glfwPollEvents();
+		window.update();
 	}
 
 	glfwTerminate();

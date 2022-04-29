@@ -3,10 +3,10 @@
 
 
 
-//////////////////////////////////////////////////////////////
-/// Simple rendering and input abstraction for GLFW Opengl.///
-/// Tygo Boons 2022 <3                                     ///
-//////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/// Simple rendering and input abstraction for GLFW Opengl. ///
+/// Tygo Boons 2022 <3                                      ///
+///////////////////////////////////////////////////////////////
 
 
 
@@ -152,23 +152,22 @@
 
 #include "glad/glad.h"
 #include <glfw/glfw3.h>
+#include "stb_image.h"
 #include <iostream>
 #include <assert.h>
 #include <array>
 #include <vector>
-#include "stb_image.h"
-#include "glm/glm.hpp"
-#include <filesystem>
 
 
-namespace engine
+namespace sr
 {
 	class window
 	{
 	public:
 
-		window(uint32_t width, uint32_t height, const char* name)
+		window(uint32_t width, uint32_t height, const char* name, bool isVsync = true)
 		{
+
 			// Initialize GLFW.
 			glfwInit();
 
@@ -187,6 +186,9 @@ namespace engine
 
 			// Set the new window to the active window.
 			glfwMakeContextCurrent(_window);
+
+			setVsync(isVsync);
+
 		}
 
 
@@ -198,22 +200,25 @@ namespace engine
 
 
 		// Updates the GLFWwindow .
-		void swapBuffer() const
+		void update() const
 		{
 			// Switches the OpenGL frame buffers.
 			glfwSwapBuffers(_window);
+
+			// Update input
+			glfwPollEvents();
+		}
+
+		void setVsync(bool enabled) const
+		{
+			// Enables and disables vsync based on bool.
+			glfwSwapInterval(enabled ? 1 : 0);
 		}
 
 
 	private:
 
 		GLFWwindow* _window;
-	};
-
-	struct rendererSettings
-	{
-		bool IsVsync = false;
-		glm::vec4 ClearColor = { 0, 0, 0, 1 };
 	};
 
 
@@ -225,11 +230,14 @@ namespace engine
 			: _window(window)
 		{}
 
+		/// Keyboard
+
 		bool isKeyPressed(int keycode)
 		{
 
 			// Get key pressed
 			auto state = glfwGetKey(_window.getGlfwWindow(), keycode);
+
 
 			// If key is not pressed return false.
 			if (!(state == GLFW_PRESS))
@@ -239,7 +247,7 @@ namespace engine
 
 
 			// Return false if key has already been pressed.
-			for (uint32_t& key : _heldKeys)
+			for (uint32_t& key : _heldButtons)
 			{
 				if (keycode == key)
 				{
@@ -249,7 +257,7 @@ namespace engine
 
 
 			// Add key to held list.
-			_heldKeys.push_back(keycode);
+			_heldButtons.push_back(keycode);
 
 			return true;
 		}
@@ -265,6 +273,9 @@ namespace engine
 
 		bool isKeyReleased(int keycode)
 		{
+			// Press key if it not pressed yet. (required to update state if isKeyPressed isnt called from your application)
+			isKeyPressed(keycode);
+
 
 			// Return false if the key is held.
 			if (isKeyHeld(keycode))
@@ -276,12 +287,14 @@ namespace engine
 			// Get key released
 			auto state = glfwGetKey(_window.getGlfwWindow(), keycode);
 
+
 			// Delete key from heldKeys array and return true if the key is released.
-			for (size_t i = 0; i < _heldKeys.size(); i++)
+			for (size_t i = 0; i < _heldButtons.size(); i++)
 			{
-				if (keycode == _heldKeys[i])
+				if (keycode == _heldButtons[i])
 				{
-					_heldKeys.erase(_heldKeys.begin() + i);
+					// Delete element from _heldButtons array at i.
+					_heldButtons.erase(_heldButtons.begin() + i);
 
 					return true;
 				}
@@ -290,46 +303,106 @@ namespace engine
 			return false;
 		}
 
+
+		/// Mouse
+
 		bool isMouseButtonPressed(int button)
 		{
 
-			// Get Window.
-			auto* window = _window.getGlfwWindow();
+			// Get key pressed
+			auto state = glfwGetMouseButton(_window.getGlfwWindow(), button);
 
 
-			// Get mouse button pressed.
-			auto state = glfwGetMouseButton(window, button);
-			return state == GLFW_PRESS;
-		
+			// If key is not pressed return false.
+			if (!(state == GLFW_PRESS))
+			{
+				return false;
+			}
+
+
+			// Return false if key has already been pressed.
+			for (uint32_t& key : _heldButtons)
+			{
+				if (button == key)
+				{
+					return false;
+				}
+			}
+
+
+			// Add key to held list.
+			_heldButtons.push_back(button);
+
+			return true;
 		}
 
-		float getMouseX()
+		bool isMouseButtonHeld(int button)
+		{
+
+			// Get key pressed or held
+			auto state = glfwGetMouseButton(_window.getGlfwWindow(), button);
+
+			return state == GLFW_PRESS || state == GLFW_REPEAT;
+		}
+
+		bool isMouseButtonReleased(int button)
+		{
+
+			// Press mouse button if it not pressed yet. (required to update state if isMouseButtonPressed isnt called from your application)
+			isMouseButtonPressed(button);
+
+
+			// Return false if the key is held.
+			if (isMouseButtonHeld(button))
+			{
+				return false;
+			}
+
+
+			// Get key released
+			auto state = glfwGetKey(_window.getGlfwWindow(), button);
+
+
+			// Delete key from heldKeys array and return true if the key is released.
+			for (size_t i = 0; i < _heldButtons.size(); i++)
+			{
+				if (button == _heldButtons[i])
+				{
+					// Delete element from _heldButtons array at i.
+					_heldButtons.erase(_heldButtons.begin() + i);
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// Mouse position
+
+		float getMouseX() const
 		{
 			return getMousePosition().first;
 		}
 
-		float getMouseY()
+		float getMouseY() const
 		{
 			return getMousePosition().second;
 		}
 
-		std::pair<float, float> getMousePosition()
+		std::pair<float, float> getMousePosition() const
 		{
-
-			// Get Window.
-			auto* window = _window.getGlfwWindow();
-
 
 			// Get mouse position.
 			double xPos, yPos;
-			glfwGetCursorPos(window, &xPos, &yPos);
+			glfwGetCursorPos(_window.getGlfwWindow(), &xPos, &yPos);
 
 			return { (float)xPos, (float)yPos };
 		}
 
 	private:
-		std::vector<uint32_t> _heldKeys;
-
+		
+		std::vector<uint32_t> _heldButtons;
 		window _window;
 	};
 
@@ -338,10 +411,72 @@ namespace engine
 	{
 	public:
 
+		struct rendererSettings
+		{
+		public:
+			rendererSettings(const std::array<float, 4>& clearColor = {0, 0, 0, 1})
+				: ClearColor(clearColor)
+			{}
+
+		public:
+
+			std::array<float, 4> ClearColor;
+		};
+
+
 		renderer(const window& window, const rendererSettings& settings)
 			: _window(window), _renderSettings(settings)
 		{
 			init();
+		}
+
+		// Initialize the renderer
+		void init()
+		{
+
+			// Initialize GLAD.
+			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+			{
+				assert(false,"Failed to initialize GLAD");
+			}
+
+
+			// Get window width and height.
+			int width = 0;
+			int height = 0;
+			glfwGetWindowSize(_window.getGlfwWindow(), &width, &height);
+
+			assert(!(width <= 0 || height <= 0), "Window size is 0.");
+
+
+			// Set viewport to window size.
+			glViewport(0, 0, width, height);
+
+		}
+
+		void clear() const
+		{
+
+			// Clear buffer data.
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			// Set background color
+			glClearColor(_renderSettings.ClearColor[0],
+						 _renderSettings.ClearColor[1],
+						 _renderSettings.ClearColor[2],
+						 _renderSettings.ClearColor[3]);
+
+		}
+
+		void draw(uint32_t elements) const
+		{
+			// Draw Triangles
+			glDrawElements(GL_TRIANGLES, elements, GL_UNSIGNED_INT, 0);
+		}
+
+		const window* getWindow() const
+		{
+			return &_window;
 		}
 
 
@@ -504,9 +639,7 @@ namespace engine
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-				// Print path the image was found in.
-				DEBUG_ONLY(std::cout << "Texture found:  " << std::filesystem::current_path() << "\\" << filename << "\n");
-
+				// Set texture data.
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 				glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -617,6 +750,91 @@ namespace engine
 		};
 
 
+		template<int S>
+		struct vertexLayout
+		{
+		public:
+
+			void bind() const
+			{
+
+				uint32_t offset = 0;
+
+				// Set stride and vertex layout.
+				for (size_t i = 0; i < S; i++)
+				{
+					glEnableVertexAttribArray(i);
+					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
+
+					offset += glDatatypeSize(DataType[i]) * Amount[i];
+				}
+
+			}
+
+			std::array<uint32_t, S> Amount = { 0 };
+			std::array<uint32_t, S> DataType = { 0 };
+
+			uint32_t Stride = 0;
+		};
+
+		struct vertexLayoutDynamic
+		{
+		public:
+
+			vertexLayoutDynamic(uint32_t initialSize = 0)
+			{
+				setSize(initialSize);
+			}
+
+			void setSize(uint32_t size)
+			{
+				// Resize vectors to specified size.
+				Amount.resize(size);
+				DataType.resize(size);
+			}
+
+			void bind() const
+			{
+
+				uint32_t offset = 0;
+
+				// Set stride and vertex layout.
+				for (size_t i = 0; i < Amount.size(); i++)
+				{
+					glEnableVertexAttribArray(i);
+					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
+
+					offset += glDatatypeSize(DataType[i]) * Amount[i];
+				}
+
+			}
+
+
+		public:
+
+			std::vector<uint32_t> Amount = { 0 };
+			std::vector<uint32_t> DataType = { 0 };
+
+			uint32_t Stride = 0;
+		};
+
+		static uint32_t glDatatypeSize(uint32_t type)
+		{
+
+			// Return size in bytes from Opengl datatype.
+			switch (type)
+			{
+			case GL_FLOAT:        return 4;
+			case GL_INT:          return 4;
+			case GL_DOUBLE:       return 8;
+			case GL_UNSIGNED_INT: return 4;
+
+			default: assert(false, "Datatype not implemented.");
+			}
+
+		}
+
+
 		class elementBuffer
 		{
 		public:
@@ -692,141 +910,6 @@ namespace engine
 			uint32_t _id;
 			uint32_t _elementAmount;
 		};
-
-
-		// Initialize the renderer
-		void init()
-		{
-
-			// Initialize GLAD.
-			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-			{
-				assert(false,"Failed to initialize GLAD");
-			}
-
-
-			// Get window width and height.
-			int width = 0;
-			int height = 0;
-			glfwGetWindowSize(_window.getGlfwWindow(), &width, &height);
-
-			assert(!(width <= 0 || height <= 0), "Window size is 0.");
-
-
-			// Set viewport to window size.
-			glViewport(0, 0, width, height);
-
-		}
-
-		static uint32_t glDatatypeSize(uint32_t type)
-		{
-
-			// Return size in bytes from Opengl datatype.
-			switch (type)
-			{
-			case GL_FLOAT:        return 4;
-			case GL_INT:          return 4;
-			case GL_DOUBLE:       return 8;
-			case GL_UNSIGNED_INT: return 4;
-
-			default: assert(false, "Datatype not implemented.");
-			}
-
-		}
-
-		template<int S>
-		struct vertexLayout
-		{
-		public:
-
-			void bind() const
-			{
-
-				uint32_t offset = 0;
-
-				// Set stride and vertex layout.
-				for (size_t i = 0; i < S; i++)
-				{
-					glEnableVertexAttribArray(i);
-					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
-
-					offset += glDatatypeSize(DataType[i]) * Amount[i];
-				}
-
-			}
-
-			std::array<uint32_t, S> Amount = { 0 };
-			std::array<uint32_t, S> DataType = { 0 };
-
-			uint32_t Stride = 0;
-		};
-
-		struct vertexLayoutDynamic
-		{
-		public:
-
-			vertexLayoutDynamic(uint32_t initialSize = 0)
-			{
-				setSize(initialSize);
-			}
-
-			void setSize(uint32_t size)
-			{
-				// Resize vectors to specified size.
-				Amount.resize(size);
-				DataType.resize(size);
-			}
-
-			void bind() const
-			{
-
-				uint32_t offset = 0;
-
-				// Set stride and vertex layout.
-				for (size_t i = 0; i < Amount.size(); i++)
-				{
-					glEnableVertexAttribArray(i);
-					glVertexAttribPointer(i, Amount[i], DataType[i], GL_FALSE, Stride, (const void*)offset);
-
-					offset += glDatatypeSize(DataType[i]) * Amount[i];
-				}
-
-			}
-
-
-		public:
-
-			std::vector<uint32_t> Amount = { 0 };
-			std::vector<uint32_t> DataType = { 0 };
-
-			uint32_t Stride = 0;
-		};
-
-
-		void clear() const
-		{
-
-			// Clear buffer data.
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// Set background color
-			glClearColor(_renderSettings.ClearColor.r,
-						 _renderSettings.ClearColor.g, 
-						 _renderSettings.ClearColor.b, 
-						 _renderSettings.ClearColor.a);
-
-		}
-
-		void draw(uint32_t elements) const
-		{
-			// Draw Triangles
-			glDrawElements(GL_TRIANGLES, elements, GL_UNSIGNED_INT, 0);
-		}
-
-		const window* getWindow() const
-		{
-			return &_window;
-		}
 
 
 	private:
