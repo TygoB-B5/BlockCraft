@@ -55,9 +55,9 @@ std::vector<uint32_t> indices
 
 int main()
 {
-	engine::renderer renderer(engine::window(1000, 1000, "My window"), engine::rendererSettings());
-
-	renderer.init();
+	auto window = engine::window(1000, 1000, "My window");
+	engine::renderer renderer(window, engine::rendererSettings());
+	engine::input input(window);
 
 	engine::renderer::vertexBuffer vertBuffer(&vertices[0], 20);
 
@@ -85,11 +85,11 @@ int main()
 	while (!glfwWindowShouldClose(renderer.getWindow()->getGlfwWindow()))
 	{
 		renderer.clear();
+
 		texture.bind();
 		shader.bind();
 		vertBuffer.bind();
 		elemBuffer.bind();
-
 		renderer.draw(elemBuffer.getElementAmount());
 
 		renderer.getWindow()->swapBuffer();
