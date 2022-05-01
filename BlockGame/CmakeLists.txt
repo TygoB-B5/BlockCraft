@@ -10,6 +10,9 @@ add_subdirectory(engine)
 file(GLOB MCR_SOURCES CONFIGURE_DEPENDS
 game/src/*.cpp
 game/src/*.h
+
+game/src/rendering/*.cpp
+game/src/rendering/*.h
 )
 
 add_executable(${PROJECT_NAME} ${MCR_SOURCES})
