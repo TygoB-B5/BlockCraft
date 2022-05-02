@@ -11,3 +11,4 @@
 #include "src/input.h"
 #include "src/renderer.h"
 #include "src/textureatlas.h"
+#include "src/camera.h"

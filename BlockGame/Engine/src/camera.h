@@ -2,7 +2,7 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
-namespace blockgame
+namespace blockcraft
 {
 	class spectatorCamera
 	{

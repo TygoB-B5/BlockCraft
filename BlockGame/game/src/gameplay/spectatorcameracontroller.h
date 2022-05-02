@@ -1,10 +1,8 @@
 #pragma once
 #include "engine.h"
 #include "glm/glm.hpp"
-#include "spectatorcamera.h"
-#include "glm/glm.hpp"
 
-namespace blockgame
+namespace blockcraft
 {
 	class spectatorCameraController
 	{

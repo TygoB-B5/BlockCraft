@@ -1,7 +1,7 @@
-#include "spectatorcamera.h"
+#include "camera.h"
 #include "glm/gtc/matrix_transform.hpp"
 
-namespace blockgame
+namespace blockcraft
 {
 
 	spectatorCamera::spectatorCamera(float fov, float aspectRatio, float zNear, float zFar)

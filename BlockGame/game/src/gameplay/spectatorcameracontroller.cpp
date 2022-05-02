@@ -1,6 +1,6 @@
 #include "spectatorcameracontroller.h"
 
-namespace blockgame
+namespace blockcraft
 {
 
 	void spectatorCameraController::update(float deltaTime)
