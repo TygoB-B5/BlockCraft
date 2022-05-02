@@ -6,7 +6,7 @@ namespace glr
 
 	/// Renderer
 
-	renderer::renderer(window* window, const rendererSettings& settings)
+	renderer::renderer(const window* window, const rendererSettings& settings)
 		: _window(window), _renderSettings(settings)
 	{
 		init();
@@ -39,7 +39,15 @@ namespace glr
 		if (_renderSettings.CullingMode != rendererSettings::cullingMode::None)
 		{
 			glEnable(GL_CULL_FACE);
-			glCullFace(_renderSettings.CullingMode);
+			glCullFace((GLenum)_renderSettings.CullingMode);
+		}
+
+
+		// Set depth testing mode.
+		if (_renderSettings.DepthTestingMode != rendererSettings::depthTestingMode::None)
+		{
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc((GLenum)_renderSettings.DepthTestingMode);
 		}
 
 	}
@@ -319,7 +327,7 @@ namespace glr
 
 
 		// Copy the vertex data into the buffer's memory
-		glBufferData(GL_ARRAY_BUFFER, elements * sizeof(float), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, elements * sizeof(float), vertices, GL_DYNAMIC_DRAW);
 
 		_vertexAmount = elements;
 	}
@@ -328,6 +336,7 @@ namespace glr
 	void vertexBuffer::bind() const
 	{
 		// Bind vao
+		glBindBuffer(GL_ARRAY_BUFFER, _vboId);
 		glBindVertexArray(_vaoId);
 	}
 
@@ -335,6 +344,7 @@ namespace glr
 	{
 		// Unbind buffer.
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
 
 
@@ -417,7 +427,7 @@ namespace glr
 		bind();
 
 		// Copy the index data into the buffer's memory
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements * sizeof(uint32_t), indices, GL_DYNAMIC_DRAW);
 
 		_elementAmount = elements;
 	}

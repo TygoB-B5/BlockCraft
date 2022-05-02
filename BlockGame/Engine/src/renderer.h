@@ -155,21 +155,33 @@ namespace glr
 		{
 		public:
 
-			enum cullingMode
+			enum class cullingMode
 			{
 				None = 0,
 				Front = GL_FRONT,
 				Back = GL_BACK,
 			};
 
+			enum class depthTestingMode
+			{
+				None = 0,
+				Always = GL_ALWAYS,
+				Never = GL_NEVER,
+				Less = GL_LESS,
+				Equal = GL_EQUAL,
+				Greater = GL_GREATER
+			};
+
 		public:
 
-			cullingMode CullingMode = Back;
+			cullingMode CullingMode = cullingMode::Back;
+			depthTestingMode DepthTestingMode = depthTestingMode::None;
+
 			std::array<float, 4> ClearColor = { 0, 0, 0, 1 };
 		};
 
 
-		renderer(window* window, const rendererSettings& settings);
+		renderer(const window* window, const rendererSettings& settings);
 
 		void init();
 
@@ -181,7 +193,7 @@ namespace glr
 
 	private:
 
-		window* _window;
+		const window* _window;
 		rendererSettings _renderSettings;
 	};
 
