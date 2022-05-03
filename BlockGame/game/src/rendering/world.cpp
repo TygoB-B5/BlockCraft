@@ -85,15 +85,15 @@ namespace blockcraft
 
 	}
 
-	void world::addChunk(const glm::vec2 cords)
+	chunk* world::addChunk(const glm::vec2 cords)
 	{
 
 		// Create chunk and add all the buffers and chunk.
-		chunk* c = new chunk(cords, &_blockLibrary);
+		chunk* c = new chunk(cords, this);
 		_chunks.push_back(c);
 		_chunkElementBuffers.push_back(new glr::elementBuffer(c->getChunkIndexData().first, c->getChunkIndexData().second));
-		_chunkVertexBuffer.push_back(new glr::vertexBuffer(c->getChunkvertexData().first, c->getChunkvertexData().second));
-
+		_chunkVertexBuffer.push_back(new glr::vertexBuffer(c->getChunkVertexData().first, c->getChunkVertexData().second));
+		return c;
 	}
 
 	void world::draw(const spectatorCamera* camera, const glr::renderer* renderer)
@@ -110,12 +110,21 @@ namespace blockcraft
 		// Get Viewprojection matrix.
 		glm::mat4 viewProjection = camera->getViewProjectionMatrix();
 
+
 		// Draw chunks.
 		for (size_t i = 0; i < _chunks.size(); i++)
 		{
 
 			// Bind element and vertex buffer
 			_shader.bind();
+
+			// Get new vertex and index data if there is any.
+			if(_chunks[i]->getHasNewVertexData())
+				_chunkVertexBuffer[i]->setVertexData(_chunks[i]->getChunkVertexData().first, _chunks[i]->getChunkVertexData().second);
+
+			if (_chunks[i]->getHasNewIndexData())
+				_chunkElementBuffers[i]->setElementData(_chunks[i]->getChunkIndexData().first, _chunks[i]->getChunkIndexData().second);
+
 			_chunkVertexBuffer[i]->bind();
 			_chunkElementBuffers[i]->bind();
 

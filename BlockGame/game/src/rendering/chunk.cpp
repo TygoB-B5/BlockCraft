@@ -9,38 +9,26 @@ namespace blockcraft
 
 		// TODO Turn this in to some proper rendering with noise maps.
 
+				// Stone Layer
+		for (size_t x = 0; x < CHUNK_SIZE; x++)
+		{
+			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			{
+				for (size_t z = 0; z < CHUNK_SIZE; z++)
+				{
+					_blockData[x][y][z] = ID_BLOCK_AIR;
+				}
+			}
+		}
 
 		// Stone Layer
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT - 6; y++)
+			for (size_t y = 0; y < CHUNK_HEIGHT - 1; y++)
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
 					_blockData[x][y][z] = ID_BLOCK_STONE;
-				}
-			}
-		}
-
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
-		{
-			for (size_t y = CHUNK_HEIGHT - 6; y < CHUNK_HEIGHT - 1; y++)
-			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
-				{
-					_blockData[x][y][z] = ID_BLOCK_DIRT;
-				}
-			}
-		}
-
-		// Grass layer
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
-		{
-			for (size_t y = CHUNK_HEIGHT - 1; y < CHUNK_HEIGHT; y++)
-			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
-				{
-					_blockData[x][y][z] = ID_BLOCK_GRASS;
 				}
 			}
 		}
@@ -62,8 +50,8 @@ namespace blockcraft
 
 	void chunk::constructRendering()
 	{
-		_blockVertices.clear();
-		_blockIndices.clear();
+		_blockVertices.resize(0);
+		_blockIndices.resize(0);
 
 		uint32_t i = 0;
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
@@ -82,7 +70,7 @@ namespace blockcraft
 					for (size_t s = 0; s < 6; s++)
 					{
 
-						// Skip rendering if it is not visable anyways.
+						// Skip rendering if it is not visible.
 						if (!_visibleSides[z][y][x][s])
 							continue;
 
@@ -90,7 +78,7 @@ namespace blockcraft
 
 
 						// Get required texture cords for current side.
-						std::array<glm::vec2, 4> tex = _blockTextureLibrary->getTextureCoordSideFromId(_blockData[x][y][z], s);
+						std::array<glm::vec2, 4> tex = _world->getBlockLibrary()->getTextureCoordSideFromId(_blockData[x][y][z], s);
 
 
 						// Select which side to add based on index s.
@@ -154,13 +142,15 @@ namespace blockcraft
 		}
 	}
 
-	std::pair<float*, uint32_t> chunk::getChunkvertexData()
+	std::pair<float*, uint32_t> chunk::getChunkVertexData()
 	{
+		_hasNewVertexData = false;
 		return { (float*)&_blockVertices[0], _blockVertices.size() * sizeof(blockVertex) / sizeof(float) };
 	}
 
 	std::pair<uint32_t*, uint32_t> chunk::getChunkIndexData()
 	{
+		_hasNewIndexData = false;
 		return { (uint32_t*)&_blockIndices[0], _blockIndices.size() };
 	}
 
@@ -170,12 +160,37 @@ namespace blockcraft
 		return glm::translate(glm::mat4(1.0f), glm::vec3(_chunkPosition.x * CHUNK_SIZE, 0, _chunkPosition.y * CHUNK_SIZE));
 	}
 
-	inline void chunk::setBlockData(uint32_t x, uint32_t y, uint32_t z, uint32_t value)
+	void chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
 	{
-		_blockData[x][y][z] = value;
+		// Enable new data.
+		_hasNewVertexData = true;
+		_hasNewIndexData = true;
 
+		// Set right block to id.
+		_blockData[x][y][z] = id;
+
+
+		// Update the blocks surrounding this block.
+
+		if (x > 0)
+			updateVisibilityDataForBlock(x - 1, y, z);
+
+		if (y > 0)
+			updateVisibilityDataForBlock(x, y - 1, z);
+
+		if (z > 0)
+			updateVisibilityDataForBlock(x, y, z - 1);
+
+		if (x < CHUNK_SIZE - 1)
+			updateVisibilityDataForBlock(x + 1, y, z);
+
+		if (y < CHUNK_HEIGHT - 1)
+			updateVisibilityDataForBlock(x, y + 1, z);
+
+		if (z < CHUNK_SIZE - 1)
+			updateVisibilityDataForBlock(x, y, z + 1);
+			
 		updateVisibilityDataForBlock(x, y, z);
-
 
 		//TODO Make this more efficient.
 		//
@@ -187,14 +202,17 @@ namespace blockcraft
 	}
 
 	inline void chunk::updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z)
-
 	{
-		// Skip if the block is air.
+
+		// Hide all sides if the block is air.
 		if (_blockData[x][y][z] == ID_BLOCK_AIR)
+		{
 			return;
+		}
+
 
 		// Bottom
-		if (y >= 1)
+		if (y > 0)
 			_visibleSides[z][y][x][0] = _blockData[x][y - 1][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][0] = true;
@@ -206,7 +224,7 @@ namespace blockcraft
 			_visibleSides[z][y][x][1] = true;
 
 		// Left
-		if (x >= 1)
+		if (x > 0)
 			_visibleSides[z][y][x][2] = _blockData[x - 1][y][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][2] = true;

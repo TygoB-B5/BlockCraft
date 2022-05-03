@@ -11,7 +11,8 @@ namespace blockcraft
 	public:
 
 		game();
-		
+		~game();
+
 		void update();
 
 		bool getRunning() const {return _running; }

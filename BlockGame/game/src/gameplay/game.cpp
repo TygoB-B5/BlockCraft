@@ -24,12 +24,12 @@ namespace blockcraft
 
 		// Create world and generate chunks.
 		_world = new world();
-
-		for (size_t x = 0; x < 1; x++)
+		chunk* c = nullptr;
+		for (size_t x = 0; x < 16; x++)
 		{
-			for (size_t z = 0; z < 1; z++)
+			for (size_t z = 0; z < 16; z++)
 			{
-				_world->addChunk({ x, z });
+				c = _world->addChunk({ x, z });
 			}
 		}
 
@@ -39,14 +39,30 @@ namespace blockcraft
 
 	}
 
+	game::~game()
+	{
+		// Free all objects.
+		delete(_window);
+		delete(_renderer);
+		delete(_input);
+		delete(_world);
+		delete(_controller);
+	}
+
+	int i = 0;
+
 	void game::update()
 	{
 		// Game loop.
 		_renderer->clear();
 
+		for (auto& c : *_world->getChunks())
+		{
+			c->setBlock(rand() % 16, 31, rand() % 16, rand() % 4);
+		}
+
 		_controller->update(0.01);
 		_world->draw(&_controller->getCamera(), _renderer);
-
 		_input->clear();
 		_window->update();
 

@@ -33,8 +33,8 @@ namespace blockcraft
 		glm::vec3 _cameraRotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec2 _mouseAcceleration = { 0.0f, 0.0f };
 		float _cameraSpeedMultiplier = 1.0f;
-		float _cameraTranslationSpeed = 30.0f;
-		float _cameraTranslationBoostedSpeed = 10.0f;
-		float _cameraSensitivity = 1.0f;
+		float _cameraTranslationSpeed = 10.0f;
+		float _cameraTranslationBoostedSpeed = 30.0f;
+		float _cameraSensitivity = 0.33f;
 	};
 }

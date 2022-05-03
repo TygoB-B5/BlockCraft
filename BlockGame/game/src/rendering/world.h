@@ -1,14 +1,15 @@
 #pragma once
 
 #include "engine.h"
+#include "chunk.h"
 #include "glm/glm.hpp"
 #include <vector>
-#include "block.h"
-#include "chunk.h"
+#include "blocktexturelibrary.h"
 
 
 namespace blockcraft
 {
+	class chunk;
 
 	class world
 	{
@@ -20,13 +21,18 @@ namespace blockcraft
 
 		void init();
 
-		void addChunk(const glm::vec2 cords);
+		chunk* addChunk(const glm::vec2 cords);
 
 		void draw(const spectatorCamera* camera, const glr::renderer* renderer);
 
-		chunk* getChunk() const
+		const std::vector<chunk*>* getChunks() const
 		{
-			return _chunks[0];
+			return &_chunks;
+		}
+
+		blockTextureLibrary* getBlockLibrary()
+		{
+			return &_blockLibrary;
 		}
 
 
