@@ -1,7 +1,8 @@
 #pragma once
 
 #include "renderer.h"
-
+#include <array>
+#include "glm/glm.hpp"
 
 namespace glr
 {
@@ -13,15 +14,17 @@ namespace glr
 
 		void set(texture* texture, uint32_t spriteSize);
 
-		std::pair<float, float> getBottomLeftTexCoordFromId(uint32_t id);
-		std::pair<float, float> getBottomRightTexCoordFromId(uint32_t id);
-		std::pair<float, float> getTopLeftTexCoordFromId(uint32_t id);
-		std::pair<float, float> getTopRightTexCoordFromId(uint32_t id);
+		std::array<glm::vec2, 4> getTexCoord(uint32_t id);
 
-		std::pair<float, float> getBottomLeftTexCoordFromId(uint32_t row, uint32_t colum);
-		std::pair<float, float> getBottomRightTexCoordFromId(uint32_t row, uint32_t colum);
-		std::pair<float, float> getTopLeftTexCoordFromId(uint32_t row, uint32_t colum);
-		std::pair<float, float> getTopRightTexCoordFromId(uint32_t row, uint32_t colum);
+		glm::vec2 getBottomLeftTexCoordFromId(uint32_t id);
+		glm::vec2 getBottomRightTexCoordFromId(uint32_t id);
+		glm::vec2 getTopLeftTexCoordFromId(uint32_t id);
+		glm::vec2 getTopRightTexCoordFromId(uint32_t id);
+
+		glm::vec2 getBottomLeftTexCoordFromId(uint32_t row, uint32_t colum);
+		glm::vec2 getBottomRightTexCoordFromId(uint32_t row, uint32_t colum);
+		glm::vec2 getTopLeftTexCoordFromId(uint32_t row, uint32_t colum);
+		glm::vec2 getTopRightTexCoordFromId(uint32_t row, uint32_t colum);
 
 	private:
 

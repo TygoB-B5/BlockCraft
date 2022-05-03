@@ -3,11 +3,8 @@
 #include "glm/glm.hpp"
 #include <vector>
 
-#define BLOCK_AIR 0
-#define BLOCK_DIRT 1
-
 #define CHUNK_HEIGHT 32
-#define CHUNK_SIZE 32
+#define CHUNK_SIZE 16
 
 
 namespace blockcraft
@@ -17,8 +14,8 @@ namespace blockcraft
 	{
 	public:
 
-		chunk(const glm::vec2& cord)
-			: _chunkPosition(cord)
+		chunk(const glm::vec2& cord, blockTextureLibrary* blockTextureLib)
+			: _chunkPosition(cord), _blockTextureLibrary(blockTextureLib)
 		{
 			constructChunkData();
 			calculateAllBlockVisibility();
@@ -45,6 +42,7 @@ namespace blockcraft
 	private:
 
 		glm::vec2 _chunkPosition;
+		blockTextureLibrary* _blockTextureLibrary;
 
 		std::vector<blockVertex> _blockVertices;
 		std::vector<uint32_t> _blockIndices;

@@ -3,7 +3,6 @@
 int main()
 {
 	blockcraft::game g;
-	g.init();
 
 	while (g.getRunning())
 	{

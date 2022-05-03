@@ -3,9 +3,6 @@
 namespace blockcraft
 {
 
-	// Shader source
-
-
 	const char* world::_vertexShaderSrc = R"(
 
 		#version 330 core
@@ -47,7 +44,7 @@ namespace blockcraft
 
 
 	world::world()
-		: _texture(BLOCK_TEXTURE_FILE_NAME), _atlas(&_texture, BLOCK_TEXTURE_PIXEL_SIZE)
+		: _blockLibrary(blockTextureLibrary())
 	{
 		init();
 	}
@@ -86,21 +83,13 @@ namespace blockcraft
 		// Setup shader.
 		_shader.compileShader(_vertexShaderSrc, _fragmentShaderSrc);
 
-
-		// Setup texture.
-		_texture.setTexture("test2.jpg");
-
-
-		// Setup textureAtlas.
-		_atlas.set(&_texture, 16);
-
 	}
 
 	void world::addChunk(const glm::vec2 cords)
 	{
 
 		// Create chunk and add all the buffers and chunk.
-		chunk* c = new chunk(cords);
+		chunk* c = new chunk(cords, &_blockLibrary);
 		_chunks.push_back(c);
 		_chunkElementBuffers.push_back(new glr::elementBuffer(c->getChunkIndexData().first, c->getChunkIndexData().second));
 		_chunkVertexBuffer.push_back(new glr::vertexBuffer(c->getChunkvertexData().first, c->getChunkvertexData().second));
@@ -115,7 +104,7 @@ namespace blockcraft
 
 
 		// Bind texture.
-		_texture.bind(0);
+		_blockLibrary.getTexture().bind(0);
 
 
 		// Get Viewprojection matrix.

@@ -3,7 +3,8 @@
 namespace blockcraft
 {
 
-	void game::init()
+	game::game()
+		: _running(true)
 	{
 		// Create window.
 		_window = new glr::window(1000, 1000, "My window", true);
@@ -24,9 +25,9 @@ namespace blockcraft
 		// Create world and generate chunks.
 		_world = new world();
 
-		for (size_t x = 0; x < 16; x++)
+		for (size_t x = 0; x < 1; x++)
 		{
-			for (size_t z = 0; z < 16; z++)
+			for (size_t z = 0; z < 1; z++)
 			{
 				_world->addChunk({ x, z });
 			}

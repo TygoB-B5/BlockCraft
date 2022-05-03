@@ -9,38 +9,38 @@ namespace blockcraft
 
 		// TODO Turn this in to some proper rendering with noise maps.
 
-		// dirt layer
+
+		// Stone Layer
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT / 2; y++)
+			for (size_t y = 0; y < CHUNK_HEIGHT - 6; y++)
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
-					_blockData[x][y][z] = BLOCK_DIRT;
+					_blockData[x][y][z] = ID_BLOCK_STONE;
 				}
 			}
 		}
 
-		// air layer
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = CHUNK_HEIGHT / 2; y < CHUNK_HEIGHT; y++)
+			for (size_t y = CHUNK_HEIGHT - 6; y < CHUNK_HEIGHT - 1; y++)
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
-					_blockData[x][y][z] = BLOCK_AIR;
+					_blockData[x][y][z] = ID_BLOCK_DIRT;
 				}
 			}
 		}
 
-		// rand layer
+		// Grass layer
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = CHUNK_HEIGHT / 2; y < CHUNK_HEIGHT / 2 + 1; y++)
+			for (size_t y = CHUNK_HEIGHT - 1; y < CHUNK_HEIGHT; y++)
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
-					_blockData[x][y][z] = rand() % 3 == 2 ? BLOCK_AIR : BLOCK_DIRT;
+					_blockData[x][y][z] = ID_BLOCK_GRASS;
 				}
 			}
 		}
@@ -74,7 +74,7 @@ namespace blockcraft
 				{
 
 					// Skip loop if block is air.
-					if (_blockData[x][y][z] == BLOCK_AIR)
+					if (_blockData[x][y][z] == ID_BLOCK_AIR)
 						continue;
 
 
@@ -88,49 +88,54 @@ namespace blockcraft
 
 						typedef blockSides sc;
 
+
+						// Get required texture cords for current side.
+						std::array<glm::vec2, 4> tex = _blockTextureLibrary->getTextureCoordSideFromId(_blockData[x][y][z], s);
+
+
 						// Select which side to add based on index s.
 						switch (s)
 						{
-						case 0:
-							_blockVertices.push_back(blockVertex({ sc::bottom[0].x + x, sc::bottom[0].y + y, sc::bottom[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::bottom[1].x + x, sc::bottom[1].y + y, sc::bottom[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::bottom[2].x + x, sc::bottom[2].y + y, sc::bottom[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::bottom[3].x + x, sc::bottom[3].y + y, sc::bottom[3].z + z }, { 1.0f, 0.0f }));
+						case 0: // Bottom
+							_blockVertices.push_back(blockVertex({ sc::bottom[0].x + x, sc::bottom[0].y + y, sc::bottom[0].z + z }, tex[0]));
+							_blockVertices.push_back(blockVertex({ sc::bottom[1].x + x, sc::bottom[1].y + y, sc::bottom[1].z + z }, tex[1]));
+							_blockVertices.push_back(blockVertex({ sc::bottom[2].x + x, sc::bottom[2].y + y, sc::bottom[2].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::bottom[3].x + x, sc::bottom[3].y + y, sc::bottom[3].z + z }, tex[3]));
 							break;
 
-						case 1:
-							_blockVertices.push_back(blockVertex({ sc::top[0].x + x, sc::top[0].y + y, sc::top[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::top[1].x + x, sc::top[1].y + y, sc::top[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::top[2].x + x, sc::top[2].y + y, sc::top[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::top[3].x + x, sc::top[3].y + y, sc::top[3].z + z }, { 1.0f, 0.0f }));
+						case 1: // Top
+							_blockVertices.push_back(blockVertex({ sc::top[0].x + x, sc::top[0].y + y, sc::top[0].z + z }, tex[0]));
+							_blockVertices.push_back(blockVertex({ sc::top[1].x + x, sc::top[1].y + y, sc::top[1].z + z }, tex[1]));
+							_blockVertices.push_back(blockVertex({ sc::top[2].x + x, sc::top[2].y + y, sc::top[2].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::top[3].x + x, sc::top[3].y + y, sc::top[3].z + z }, tex[3]));
 							break;
 
-						case 2:
-							_blockVertices.push_back(blockVertex({ sc::left[0].x + x, sc::left[0].y + y, sc::left[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::left[1].x + x, sc::left[1].y + y, sc::left[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::left[2].x + x, sc::left[2].y + y, sc::left[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::left[3].x + x, sc::left[3].y + y, sc::left[3].z + z }, { 1.0f, 0.0f }));
+						case 2: // Left
+							_blockVertices.push_back(blockVertex({ sc::left[0].x + x, sc::left[0].y + y, sc::left[0].z + z }, tex[1]));
+							_blockVertices.push_back(blockVertex({ sc::left[1].x + x, sc::left[1].y + y, sc::left[1].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::left[2].x + x, sc::left[2].y + y, sc::left[2].z + z }, tex[3]));
+							_blockVertices.push_back(blockVertex({ sc::left[3].x + x, sc::left[3].y + y, sc::left[3].z + z }, tex[0]));
 							break;
 
-						case 3:
-							_blockVertices.push_back(blockVertex({ sc::right[0].x + x, sc::right[0].y + y, sc::right[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::right[1].x + x, sc::right[1].y + y, sc::right[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::right[2].x + x, sc::right[2].y + y, sc::right[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::right[3].x + x, sc::right[3].y + y, sc::right[3].z + z }, { 1.0f, 0.0f }));
+						case 3: // Right
+							_blockVertices.push_back(blockVertex({ sc::right[0].x + x, sc::right[0].y + y, sc::right[0].z + z }, tex[1]));
+							_blockVertices.push_back(blockVertex({ sc::right[1].x + x, sc::right[1].y + y, sc::right[1].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::right[2].x + x, sc::right[2].y + y, sc::right[2].z + z }, tex[3]));
+							_blockVertices.push_back(blockVertex({ sc::right[3].x + x, sc::right[3].y + y, sc::right[3].z + z }, tex[0]));
 							break;
 
-						case 4:
-							_blockVertices.push_back(blockVertex({ sc::front[0].x + x, sc::front[0].y + y, sc::front[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::front[1].x + x, sc::front[1].y + y, sc::front[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::front[2].x + x, sc::front[2].y + y, sc::front[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::front[3].x + x, sc::front[3].y + y, sc::front[3].z + z }, { 1.0f, 0.0f }));
+						case 4: // Front
+							_blockVertices.push_back(blockVertex({ sc::front[0].x + x, sc::front[0].y + y, sc::front[0].z + z }, tex[0]));
+							_blockVertices.push_back(blockVertex({ sc::front[1].x + x, sc::front[1].y + y, sc::front[1].z + z }, tex[1]));
+							_blockVertices.push_back(blockVertex({ sc::front[2].x + x, sc::front[2].y + y, sc::front[2].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::front[3].x + x, sc::front[3].y + y, sc::front[3].z + z }, tex[3]));
 							break;
 
-						case 5:
-							_blockVertices.push_back(blockVertex({ sc::back[0].x + x, sc::back[0].y + y, sc::back[0].z + z }, { 0.0f, 0.0f }));
-							_blockVertices.push_back(blockVertex({ sc::back[1].x + x, sc::back[1].y + y, sc::back[1].z + z }, { 0.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::back[2].x + x, sc::back[2].y + y, sc::back[2].z + z }, { 1.0f, 1.0f }));
-							_blockVertices.push_back(blockVertex({ sc::back[3].x + x, sc::back[3].y + y, sc::back[3].z + z }, { 1.0f, 0.0f }));
+						case 5: // Back
+							_blockVertices.push_back(blockVertex({ sc::back[0].x + x, sc::back[0].y + y, sc::back[0].z + z }, tex[2]));
+							_blockVertices.push_back(blockVertex({ sc::back[1].x + x, sc::back[1].y + y, sc::back[1].z + z }, tex[3]));
+							_blockVertices.push_back(blockVertex({ sc::back[2].x + x, sc::back[2].y + y, sc::back[2].z + z }, tex[0]));
+							_blockVertices.push_back(blockVertex({ sc::back[3].x + x, sc::back[3].y + y, sc::back[3].z + z }, tex[1]));
 							break;
 						}
 
@@ -185,42 +190,42 @@ namespace blockcraft
 
 	{
 		// Skip if the block is air.
-		if (_blockData[x][y][z] == BLOCK_AIR)
+		if (_blockData[x][y][z] == ID_BLOCK_AIR)
 			return;
 
 		// Bottom
 		if (y >= 1)
-			_visibleSides[z][y][x][0] = _blockData[x][y - 1][z] == BLOCK_AIR;
+			_visibleSides[z][y][x][0] = _blockData[x][y - 1][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][0] = true;
 
 		// Top
 		if (y < CHUNK_HEIGHT - 1)
-			_visibleSides[z][y][x][1] = _blockData[x][y + 1][z] == BLOCK_AIR;
+			_visibleSides[z][y][x][1] = _blockData[x][y + 1][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][1] = true;
 
 		// Left
 		if (x >= 1)
-			_visibleSides[z][y][x][2] = _blockData[x - 1][y][z] == BLOCK_AIR;
+			_visibleSides[z][y][x][2] = _blockData[x - 1][y][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][2] = true;
 
 		// Right
 		if (x < CHUNK_SIZE - 1)
-			_visibleSides[z][y][x][3] = _blockData[x + 1][y][z] == BLOCK_AIR;
+			_visibleSides[z][y][x][3] = _blockData[x + 1][y][z] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][3] = true;
 
 		// Front
 		if (z > 0)
-			_visibleSides[z][y][x][4] = _blockData[x][y][z - 1] == BLOCK_AIR;
+			_visibleSides[z][y][x][4] = _blockData[x][y][z - 1] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][4] = true;
 
 		// Back
 		if (z < CHUNK_SIZE - 1)
-			_visibleSides[z][y][x][5] = _blockData[x][y][z + 1] == BLOCK_AIR;
+			_visibleSides[z][y][x][5] = _blockData[x][y][z + 1] == ID_BLOCK_AIR;
 		else
 			_visibleSides[z][y][x][5] = true;
 

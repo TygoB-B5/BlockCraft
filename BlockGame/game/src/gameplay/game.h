@@ -9,12 +9,9 @@ namespace blockcraft
 	class game
 	{
 	public:
-		game()
-			: _running(true)
-		{}
-		
 
-		void init();
+		game();
+		
 		void update();
 
 		bool getRunning() const {return _running; }

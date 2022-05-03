@@ -3,10 +3,8 @@
 #include "engine.h"
 #include "glm/glm.hpp"
 #include <vector>
+#include "block.h"
 #include "chunk.h"
-
-#define BLOCK_TEXTURE_FILE_NAME "minecraft.jpg"
-#define BLOCK_TEXTURE_PIXEL_SIZE 16
 
 
 namespace blockcraft
@@ -43,7 +41,6 @@ namespace blockcraft
 		static const char* _vertexShaderSrc;
 		static const char* _fragmentShaderSrc;
 
-		glr::texture _texture;
-		glr::textureAtlas _atlas;
+		blockTextureLibrary _blockLibrary;
 	};
 }
