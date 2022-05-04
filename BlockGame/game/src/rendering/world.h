@@ -25,10 +25,14 @@ namespace blockcraft
 
 		void draw(const spectatorCamera* camera, const glr::renderer* renderer);
 
+		void setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id);
+
 		const std::vector<chunk*>* getChunks() const
 		{
 			return &_chunks;
 		}
+
+		chunk* getChunkFromPosition(const glm::vec2& chunkPosition);
 
 		blockTextureLibrary* getBlockLibrary()
 		{

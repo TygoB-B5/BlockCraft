@@ -44,8 +44,8 @@ namespace blockcraft
 
 
 		// Update camera speed.
-		_cameraSpeedMultiplier += _input->isScrollingDown() ? -0.075f: 0 + 
-								  _input->isScrollingUp() ? 0.075f : 0;
+		_cameraSpeedMultiplier += _input->isScrollingDown() ? -0.1f: 0 + 
+								  _input->isScrollingUp() ? 0.1f : 0;
 
 		_cameraSpeedMultiplier = _cameraSpeedMultiplier < 0 ? 0 : _cameraSpeedMultiplier;
 

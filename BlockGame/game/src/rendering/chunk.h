@@ -1,5 +1,6 @@
 #pragma once
 
+#include "blocktexturelibrary.h"
 #include "block.h"
 #include "world.h"
 #include "glm/glm.hpp"
@@ -17,25 +18,21 @@ namespace blockcraft
 	{
 	public:
 
-		chunk(const glm::vec2& cord, world* world)
-			: _chunkPosition(cord), _world(world), _hasNewVertexData(true), _hasNewIndexData(true)
-		{
-			constructChunkData();
-			calculateAllBlockVisibility();
-			constructRendering();
-		}
+		chunk(const glm::vec2& cord, world* world);
 
+		void init();
 
 	private:
 
-		void constructChunkData();
+		void generateChunkData();
+
+		void constructRenderingData();
+
+		inline void updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z);
+
+		uint32_t getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint32_t x, uint32_t y, uint32_t z);
 
 		void calculateAllBlockVisibility();
-
-		void updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z);
-
-		void constructRendering();
-
 
 	public:
 
@@ -49,6 +46,9 @@ namespace blockcraft
 
 		bool getHasNewVertexData() const { return _hasNewVertexData; }
 		bool getHasNewIndexData() const { return _hasNewIndexData; }
+
+		glm::vec2 getChunkPosition() const { return _chunkPosition; }
+		inline uint32_t getBlockDataAtPosition(uint32_t x, uint32_t y, uint32_t z) const { return _blockData[x][y][z]; }
 
 	private:
 

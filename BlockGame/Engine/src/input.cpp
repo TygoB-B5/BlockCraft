@@ -6,7 +6,7 @@ namespace glr
 {
 	/// Keyboard
 
-	input::input(window* window)
+	input::input(const window* window)
 		: _window(window), _scrollingDelta(0), _oldScrollingDelta(0), _isScrollingUp(false), _isScrollingDown(false)
 	{
 		_setScrollCallback(this, window->getGlfwWindow());
@@ -20,6 +20,7 @@ namespace glr
 
 	bool input::isKeyPressed(int keycode)
 	{
+		isKeyReleased(keycode);
 
 		// Get key pressed
 		auto state = glfwGetKey(_window->getGlfwWindow(), keycode);
@@ -59,8 +60,6 @@ namespace glr
 
 	bool input::isKeyReleased(int keycode)
 	{
-		// Press key if it not pressed yet. (required to update state if isKeyPressed isnt called from your application)
-		isKeyPressed(keycode);
 
 
 		// Return false if the key is held.

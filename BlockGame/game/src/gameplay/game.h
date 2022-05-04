@@ -21,9 +21,7 @@ namespace blockcraft
 
 		bool _running;
 
-		glr::window* _window;
 		glr::renderer* _renderer;
-		glr::input* _input;
 		world* _world;
 		blockcraft::spectatorCameraController* _controller;
 

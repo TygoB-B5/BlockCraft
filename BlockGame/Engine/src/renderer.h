@@ -3,11 +3,12 @@
 #include "glad/glad.h"
 #include <glfw/glfw3.h>
 #include "stb_image.h"
-#include <iostream>
 #include <assert.h>
 #include <array>
 #include <vector>
 #include "window.h"
+#include "time.h"
+#include "input.h"
 
 namespace glr
 {
@@ -181,7 +182,7 @@ namespace glr
 		};
 
 
-		renderer(const window* window, const rendererSettings& settings);
+		renderer(const window& window, const rendererSettings& settings);
 
 		void init();
 
@@ -189,11 +190,20 @@ namespace glr
 
 		void draw(uint32_t elements) const;
 
-		const window* getWindow() const { return _window; }
+		void update();
+
+		const window& getWindow() const { return _window; }
+
+		const time& getTime() const { return _time; }
+
+		const input& getInput() const { return _input; }
+		input* getInput() { return &_input; }
 
 	private:
 
-		const window* _window;
+		window _window;
+		time _time;
+		input _input;
 		rendererSettings _renderSettings;
 	};
 

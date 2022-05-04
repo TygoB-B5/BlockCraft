@@ -1,13 +1,13 @@
 #include "renderer.h"
-
+#include <iostream>
 
 namespace glr
 {
 
 	/// Renderer
 
-	renderer::renderer(const window* window, const rendererSettings& settings)
-		: _window(window), _renderSettings(settings)
+	renderer::renderer(const window& window, const rendererSettings& settings)
+		: _window(window), _renderSettings(settings), _time(time()), _input(glr::input(&_window))
 	{
 		init();
 	}
@@ -26,7 +26,7 @@ namespace glr
 		// Get window width and height.
 		int width = 0;
 		int height = 0;
-		glfwGetWindowSize(_window->getGlfwWindow(), &width, &height);
+		glfwGetWindowSize(_window.getGlfwWindow(), &width, &height);
 
 		assert(!(width <= 0 || height <= 0), "Window size is 0.");
 
@@ -70,6 +70,13 @@ namespace glr
 	{
 		// Draw Triangles
 		glDrawElements(GL_TRIANGLES, elements, GL_UNSIGNED_INT, 0);
+	}
+
+	void renderer::update()
+	{
+		_time.update();
+		_input.clear();
+		_window.update();
 	}
 
 

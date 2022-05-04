@@ -91,8 +91,17 @@ namespace blockcraft
 		// Create chunk and add all the buffers and chunk.
 		chunk* c = new chunk(cords, this);
 		_chunks.push_back(c);
+
+		
+		// Initialize the chunk after the object has been added to the chunk array.
+		c->init();
+
+
+		// Create element and vertex buffer with the chunk data.
 		_chunkElementBuffers.push_back(new glr::elementBuffer(c->getChunkIndexData().first, c->getChunkIndexData().second));
 		_chunkVertexBuffer.push_back(new glr::vertexBuffer(c->getChunkVertexData().first, c->getChunkVertexData().second));
+
+
 		return c;
 	}
 
@@ -130,6 +139,7 @@ namespace blockcraft
 
 			_vertexLayout.bind();
 
+
 			// Set ModelMatrix and ViewMatrix.
 			glm::mat4 model = _chunks[i]->getModelMatrix();
 			_shader.setUniformMat4("uViewMatrix", &viewProjection[0][0]);
@@ -146,5 +156,42 @@ namespace blockcraft
 			_chunkElementBuffers[i]->unbind();
 
 		}
+	}
+
+	void world::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
+	{
+
+		// Get chunk position data.
+		uint32_t chunkX = x / CHUNK_SIZE;
+		uint32_t chunkZ = z / CHUNK_SIZE;
+
+		// Set block on right chunk based on data.
+		for (chunk*& chunk : _chunks)
+		{
+			
+			// if chunkposition matches
+			if (chunk->getChunkPosition().x == chunkX
+				&& chunk->getChunkPosition().y == chunkZ)
+			{
+				chunk->setBlock(x % CHUNK_SIZE, y, z % CHUNK_SIZE, id);
+
+				return;
+			}
+
+		}
+
+	}
+
+	chunk* world::getChunkFromPosition(const glm::vec2& chunkPosition)
+	{
+
+		// Get chunk if available at position
+		for (chunk*& chunk : _chunks)
+		{
+			if (chunkPosition == chunk->getChunkPosition())
+				return chunk;
+		}
+
+		return nullptr;
 	}
 }

@@ -110,7 +110,5 @@ namespace glr
 		return cords;
 	}
 
-
-
 }
 

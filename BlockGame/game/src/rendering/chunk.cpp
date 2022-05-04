@@ -4,31 +4,64 @@
 namespace blockcraft
 {
 
-	void chunk::constructChunkData()
+	chunk::chunk(const glm::vec2& cord, world* world)
+		: _chunkPosition(cord), _world(world), _hasNewVertexData(false), _hasNewIndexData(false)
+	{}
+
+	void chunk::init()
+	{
+
+		// Construct new chunk data.
+		generateChunkData();
+
+		calculateAllBlockVisibility();
+		constructRenderingData();
+
+
+		// TODO make it only refresh the edges instead of the whole chunk.
+
+		// Recalculate all visible sides for surrounding chunks.
+		std::array<chunk*, 4> surroundingChunks({
+			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y + 1 }),
+			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y - 1 }),
+			_world->getChunkFromPosition({ _chunkPosition.x - 1, _chunkPosition.y }),
+			_world->getChunkFromPosition({ _chunkPosition.x + 1, _chunkPosition.y }),
+			});
+
+		for (chunk*& c : surroundingChunks)
+		{
+			if (c)
+			{
+				c->calculateAllBlockVisibility();
+				c->constructRenderingData();
+			}
+		}
+	}
+
+	void chunk::generateChunkData()
 	{
 
 		// TODO Turn this in to some proper rendering with noise maps.
 
-				// Stone Layer
+
+		// Block Layers
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
 			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
-					_blockData[x][y][z] = ID_BLOCK_AIR;
-				}
-			}
-		}
-
-		// Stone Layer
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
-		{
-			for (size_t y = 0; y < CHUNK_HEIGHT - 1; y++)
-			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
-				{
-					_blockData[x][y][z] = ID_BLOCK_STONE;
+					if (y < 10)
+						_blockData[x][y][z] = ID_BLOCK_STONE;
+					else
+						if (y < 16)
+							_blockData[x][y][z] = ID_BLOCK_DIRT;
+						else
+							if (y == 16)
+								_blockData[x][y][z] = ID_BLOCK_GRASS;
+							else
+								if(y > 16)
+									_blockData[x][y][z] = ID_BLOCK_AIR;
 				}
 			}
 		}
@@ -48,10 +81,18 @@ namespace blockcraft
 		}
 	}
 
-	void chunk::constructRendering()
+	void chunk::constructRenderingData()
 	{
+
+		// Reset vertex and index buffer data.
 		_blockVertices.resize(0);
 		_blockIndices.resize(0);
+
+
+		// Enable has new data.
+		_hasNewVertexData = true;
+		_hasNewIndexData = true;
+
 
 		uint32_t i = 0;
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
@@ -142,6 +183,22 @@ namespace blockcraft
 		}
 	}
 
+	uint32_t chunk::getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint32_t x, uint32_t y, uint32_t z)
+	{
+
+		// Get chunk from position.
+		chunk* c = _world->getChunkFromPosition(chunkPosition);
+
+
+		// If chunk is found return id from the specified position.
+		if (c)
+		{
+			return c->getBlockDataAtPosition(x, y, z);
+		}
+			
+		return ID_BLOCK_AIR;
+	}
+
 	std::pair<float*, uint32_t> chunk::getChunkVertexData()
 	{
 		_hasNewVertexData = false;
@@ -162,9 +219,6 @@ namespace blockcraft
 
 	void chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
 	{
-		// Enable new data.
-		_hasNewVertexData = true;
-		_hasNewIndexData = true;
 
 		// Set right block to id.
 		_blockData[x][y][z] = id;
@@ -198,10 +252,10 @@ namespace blockcraft
 		// Make it so it only updates the vertices around it.
 		//
 
-		constructRendering();
+		constructRenderingData();
 	}
 
-	inline void chunk::updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z)
+	void chunk::updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z)
 	{
 
 		// Hide all sides if the block is air.
@@ -210,6 +264,8 @@ namespace blockcraft
 			return;
 		}
 
+
+		// Update all 6 sides
 
 		// Bottom
 		if (y > 0)
@@ -227,25 +283,25 @@ namespace blockcraft
 		if (x > 0)
 			_visibleSides[z][y][x][2] = _blockData[x - 1][y][z] == ID_BLOCK_AIR;
 		else
-			_visibleSides[z][y][x][2] = true;
+			_visibleSides[z][y][x][2] = getBlockIdFromDifferentChunk({ _chunkPosition.x - 1, _chunkPosition.y }, CHUNK_SIZE - 1, y, z) == ID_BLOCK_AIR;
 
 		// Right
 		if (x < CHUNK_SIZE - 1)
 			_visibleSides[z][y][x][3] = _blockData[x + 1][y][z] == ID_BLOCK_AIR;
 		else
-			_visibleSides[z][y][x][3] = true;
+			_visibleSides[z][y][x][3] = getBlockIdFromDifferentChunk({ _chunkPosition.x + 1, _chunkPosition.y }, 0, y, z) == ID_BLOCK_AIR;
 
 		// Front
 		if (z > 0)
 			_visibleSides[z][y][x][4] = _blockData[x][y][z - 1] == ID_BLOCK_AIR;
 		else
-			_visibleSides[z][y][x][4] = true;
+			_visibleSides[z][y][x][4] = getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y - 1 }, x, y, CHUNK_SIZE - 1) == ID_BLOCK_AIR;
 
 		// Back
 		if (z < CHUNK_SIZE - 1)
 			_visibleSides[z][y][x][5] = _blockData[x][y][z + 1] == ID_BLOCK_AIR;
 		else
-			_visibleSides[z][y][x][5] = true;
+			_visibleSides[z][y][x][5] = getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y + 1 }, x, y, 0) == ID_BLOCK_AIR;
 
 	}
 

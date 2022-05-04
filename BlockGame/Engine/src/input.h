@@ -135,7 +135,7 @@ namespace glr
 	{
 	public:
 
-		input(window* window);
+		input(const window* window);
 
 		void clear();
 
@@ -175,7 +175,7 @@ namespace glr
 		float _scrollingDelta, _oldScrollingDelta;
 
 		std::vector<uint32_t> _heldButtons;
-		window* _window;
+		const window* _window;
 	};
 
 	static void _setScrollCallback(input* inp, GLFWwindow* window);
