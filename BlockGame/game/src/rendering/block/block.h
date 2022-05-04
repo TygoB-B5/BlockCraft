@@ -5,6 +5,11 @@
 
 namespace blockcraft
 {
+	struct blockData
+	{
+		static bool isTransparent(uint8_t id);
+	};
+
 	// Constants
 	struct blockSides
 	{

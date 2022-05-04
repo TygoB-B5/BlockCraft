@@ -1,5 +1,5 @@
 #include "textureatlas.h"
-
+#include "core.h"
 #include <utility>
 
 namespace glr
@@ -65,8 +65,8 @@ namespace glr
 		cords.x += x * _normalizedSize;
 		cords.y += y * _normalizedSize;
 
-		assert(!(cords.x > 1.0f), "x out of range");
-		assert(!(cords.y > 1.0f), "y out of range");
+		GLR_CORE_ASSERT(!(cords.x > 1.0f), "x out of range");
+		GLR_CORE_ASSERT(!(cords.y > 1.0f), "y out of range");
 
 		return cords;
 	}
@@ -78,8 +78,8 @@ namespace glr
 		cords.x += x * _normalizedSize;
 		cords.y += (y * _normalizedSize) + _normalizedSize;
 
-		assert(!(cords.x > 1.0f), "x out of range");
-		assert(!(cords.y > 1.0f), "y out of range");
+		GLR_CORE_ASSERT(!(cords.x > 1.0f), "x out of range");
+		GLR_CORE_ASSERT(!(cords.y > 1.0f), "y out of range");
 
 		return cords;
 	}
@@ -91,8 +91,8 @@ namespace glr
 		cords.x += (x * _normalizedSize) + _normalizedSize;
 		cords.y += y * _normalizedSize;
 
-		assert(!(cords.x > 1.0f), "x out of range");
-		assert(!(cords.y > 1.0f), "y out of range");
+		GLR_CORE_ASSERT(!(cords.x > 1.0f), "x out of range");
+		GLR_CORE_ASSERT(!(cords.y > 1.0f), "y out of range");
 
 		return cords;
 	}
@@ -104,8 +104,8 @@ namespace glr
 		cords.x += (x * _normalizedSize) + _normalizedSize;
 		cords.y += (y * _normalizedSize) + _normalizedSize;
 
-		assert(!(cords.x > 1.0f), "x out of range");
-		assert(!(cords.y > 1.0f), "y out of range");
+		GLR_CORE_ASSERT(!(cords.x > 1.0f), "x out of range");
+		GLR_CORE_ASSERT(!(cords.y > 1.0f), "y out of range");
 
 		return cords;
 	}

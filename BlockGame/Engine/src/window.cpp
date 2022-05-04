@@ -1,4 +1,5 @@
 #include "window.h"
+#include "core.h"
 
 namespace glr
 {
@@ -18,7 +19,7 @@ namespace glr
 		if (_window == NULL)
 		{
 			glfwTerminate();
-			assert(false, "glfwWindow is NULL");
+			GLR_CORE_ASSERT(false, "glfwWindow is NULL");
 		}
 
 

@@ -4,7 +4,7 @@
 #include "chunk.h"
 #include "glm/glm.hpp"
 #include <vector>
-#include "blocktexturelibrary.h"
+#include "block/blocktexturelibrary.h"
 
 
 namespace blockcraft
@@ -21,7 +21,8 @@ namespace blockcraft
 
 		void init();
 
-		chunk* addChunk(const glm::vec2 cords);
+		chunk* addChunk(const glm::vec2& cords);
+		void removeChunk(const glm::vec2& cords);
 
 		void draw(const spectatorCamera* camera, const glr::renderer* renderer);
 

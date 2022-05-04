@@ -18,24 +18,8 @@ namespace blockcraft
 		constructRenderingData();
 
 
-		// TODO make it only refresh the edges instead of the whole chunk.
-
 		// Recalculate all visible sides for surrounding chunks.
-		std::array<chunk*, 4> surroundingChunks({
-			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y + 1 }),
-			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y - 1 }),
-			_world->getChunkFromPosition({ _chunkPosition.x - 1, _chunkPosition.y }),
-			_world->getChunkFromPosition({ _chunkPosition.x + 1, _chunkPosition.y }),
-			});
-
-		for (chunk*& c : surroundingChunks)
-		{
-			if (c)
-			{
-				c->calculateAllBlockVisibility();
-				c->constructRenderingData();
-			}
-		}
+		updateSurroundingChunks();
 	}
 
 	void chunk::generateChunkData()
@@ -199,6 +183,41 @@ namespace blockcraft
 		return ID_BLOCK_AIR;
 	}
 
+	void chunk::remove()
+	{
+		// Write all block data to air blocks.
+		memset(&_blockData[0][0][0], ID_BLOCK_AIR, sizeof(_blockData));
+
+
+		updateSurroundingChunks();
+	}
+
+	void chunk::updateSurroundingChunks()
+	{
+
+		// TODO make it only refresh the edges instead of the whole chunk.
+
+
+		// Get surrounding chunks data.
+		std::array<chunk*, 4> surroundingChunks({
+			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y + 1 }),
+			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y - 1 }),
+			_world->getChunkFromPosition({ _chunkPosition.x - 1, _chunkPosition.y }),
+			_world->getChunkFromPosition({ _chunkPosition.x + 1, _chunkPosition.y }),
+			});
+
+
+		// If chunk is not nullptr update it.
+		for (chunk*& c : surroundingChunks)
+		{
+			if (c)
+			{
+				c->calculateAllBlockVisibility();
+				c->constructRenderingData();
+			}
+		}
+	}
+
 	std::pair<float*, uint32_t> chunk::getChunkVertexData()
 	{
 		_hasNewVertexData = false;
@@ -269,39 +288,39 @@ namespace blockcraft
 
 		// Bottom
 		if (y > 0)
-			_visibleSides[z][y][x][0] = _blockData[x][y - 1][z] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][0] = blockData::isTransparent(_blockData[x][y - 1][z]);
 		else
 			_visibleSides[z][y][x][0] = true;
 
 		// Top
 		if (y < CHUNK_HEIGHT - 1)
-			_visibleSides[z][y][x][1] = _blockData[x][y + 1][z] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][1] = blockData::isTransparent(_blockData[x][y + 1][z]);
 		else
 			_visibleSides[z][y][x][1] = true;
 
 		// Left
 		if (x > 0)
-			_visibleSides[z][y][x][2] = _blockData[x - 1][y][z] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][2] = blockData::isTransparent(_blockData[x - 1][y][z]);
 		else
-			_visibleSides[z][y][x][2] = getBlockIdFromDifferentChunk({ _chunkPosition.x - 1, _chunkPosition.y }, CHUNK_SIZE - 1, y, z) == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][2] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x - 1, _chunkPosition.y }, CHUNK_SIZE - 1, y, z));
 
 		// Right
 		if (x < CHUNK_SIZE - 1)
-			_visibleSides[z][y][x][3] = _blockData[x + 1][y][z] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][3] = blockData::isTransparent(_blockData[x + 1][y][z]);
 		else
-			_visibleSides[z][y][x][3] = getBlockIdFromDifferentChunk({ _chunkPosition.x + 1, _chunkPosition.y }, 0, y, z) == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][3] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x + 1, _chunkPosition.y }, 0, y, z));
 
 		// Front
 		if (z > 0)
-			_visibleSides[z][y][x][4] = _blockData[x][y][z - 1] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][4] = blockData::isTransparent(_blockData[x][y][z - 1]);
 		else
-			_visibleSides[z][y][x][4] = getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y - 1 }, x, y, CHUNK_SIZE - 1) == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][4] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y - 1 }, x, y, CHUNK_SIZE - 1));
 
 		// Back
 		if (z < CHUNK_SIZE - 1)
-			_visibleSides[z][y][x][5] = _blockData[x][y][z + 1] == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][5] = blockData::isTransparent(_blockData[x][y][z + 1]);
 		else
-			_visibleSides[z][y][x][5] = getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y + 1 }, x, y, 0) == ID_BLOCK_AIR;
+			_visibleSides[z][y][x][5] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y + 1 }, x, y, 0));
 
 	}
 

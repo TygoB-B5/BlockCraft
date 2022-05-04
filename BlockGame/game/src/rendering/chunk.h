@@ -1,7 +1,7 @@
 #pragma once
 
-#include "blocktexturelibrary.h"
-#include "block.h"
+#include "block/blocktexturelibrary.h"
+#include "block/block.h"
 #include "world.h"
 #include "glm/glm.hpp"
 #include <vector>
@@ -35,6 +35,10 @@ namespace blockcraft
 		void calculateAllBlockVisibility();
 
 	public:
+
+		void remove();
+
+		void updateSurroundingChunks();
 
 		std::pair<float*, uint32_t> getChunkVertexData();
 

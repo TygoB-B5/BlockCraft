@@ -73,11 +73,11 @@ namespace blockcraft
 	{
 
 		// Setup vertex Layout
-		_vertexLayout.Amount[0] = 3;
-		_vertexLayout.Amount[1] = 2;
+		_vertexLayout.Amount[0]   = 3;
+		_vertexLayout.Amount[1]   = 2;
 		_vertexLayout.DataType[0] = GL_FLOAT;
 		_vertexLayout.DataType[1] = GL_FLOAT;
-		_vertexLayout.Stride = 5 * sizeof(float);
+		_vertexLayout.Stride      = 5 * sizeof(float);
 
 
 		// Setup shader.
@@ -85,8 +85,17 @@ namespace blockcraft
 
 	}
 
-	chunk* world::addChunk(const glm::vec2 cords)
+	chunk* world::addChunk(const glm::vec2& cords)
 	{
+
+
+#ifdef GLR_DEBUG
+		// Check if chunk does not already exist on position
+		for (chunk*& chunk : _chunks)
+		{
+			GLR_ASSERT(!(chunk->getChunkPosition() == cords), "Chunk already exists on position.");
+		}
+#endif
 
 		// Create chunk and add all the buffers and chunk.
 		chunk* c = new chunk(cords, this);
@@ -103,6 +112,36 @@ namespace blockcraft
 
 
 		return c;
+	}
+
+	void world::removeChunk(const glm::vec2& cords)
+	{
+
+		// Find chunk with coord index and delete every object associated with it.
+		for (size_t i = 0; i < _chunks.size(); i++)
+		{
+			if (_chunks[i]->getChunkPosition() == cords)
+			{
+
+				// Remove chunk and update surrounding chunk states.
+				_chunks[i]->remove();
+
+
+				// Free chunk elembuffer and vertbuffer memory.
+				delete(_chunks[i]);
+				delete(_chunkElementBuffers[i]);
+				delete(_chunkVertexBuffer[i]);
+
+				// Erase vector objects.
+				_chunks.erase(_chunks.begin() + i);
+				_chunkElementBuffers.erase(_chunkElementBuffers.begin() + i);
+				_chunkVertexBuffer.erase(_chunkVertexBuffer.begin() + i);
+
+				return;
+			}
+		}
+
+		GLR_ASSERT(false, "Chunk does not exist on position");
 	}
 
 	void world::draw(const spectatorCamera* camera, const glr::renderer* renderer)
@@ -161,9 +200,12 @@ namespace blockcraft
 	void world::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
 	{
 
+		GLR_CORE_ASSERT((y <= CHUNK_HEIGHT), "Block is placed above maximum height.");
+
 		// Get chunk position data.
 		uint32_t chunkX = x / CHUNK_SIZE;
 		uint32_t chunkZ = z / CHUNK_SIZE;
+
 
 		// Set block on right chunk based on data.
 		for (chunk*& chunk : _chunks)
@@ -180,6 +222,7 @@ namespace blockcraft
 
 		}
 
+		GLR_CORE_ASSERT(false, "Block position outside of loaded chunk range");
 	}
 
 	chunk* world::getChunkFromPosition(const glm::vec2& chunkPosition)

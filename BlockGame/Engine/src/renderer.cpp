@@ -1,5 +1,6 @@
 #include "renderer.h"
 #include <iostream>
+#include "core.h"
 
 namespace glr
 {
@@ -19,7 +20,7 @@ namespace glr
 		// Initialize GLAD.
 		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 		{
-			assert(false, "Failed to initialize GLAD");
+			GLR_CORE_ASSERT(false, "Failed to initialize GLAD");
 		}
 
 
@@ -28,7 +29,7 @@ namespace glr
 		int height = 0;
 		glfwGetWindowSize(_window.getGlfwWindow(), &width, &height);
 
-		assert(!(width <= 0 || height <= 0), "Window size is 0.");
+		GLR_CORE_ASSERT(!(width <= 0 || height <= 0), "Window size is 0.");
 
 
 		// Set viewport to window size.
@@ -180,7 +181,7 @@ namespace glr
 
 	void shader::bind() const
 	{
-		assert(!(_id == 0), "Shader is not compiled.");
+		GLR_CORE_ASSERT(!(_id == 0), "Shader is not compiled.");
 
 		// Bind
 		glUseProgram(_id);
@@ -233,7 +234,7 @@ namespace glr
 		stbi_set_flip_vertically_on_load(1);
 		unsigned char* data = stbi_load(filename, &width, &height, &channels, 0);
 
-		assert(!(data == NULL), "Texture file not found!");
+		GLR_CORE_ASSERT(!(data == NULL), "Texture file not found!");
 
 		// Initialize and bind texture to textureslot 0
 		glBindTexture(GL_TEXTURE_2D, _id);
@@ -463,7 +464,7 @@ namespace glr
 		case GL_DOUBLE:       return 8;
 		case GL_UNSIGNED_INT: return 4;
 
-		default: assert(false, "Datatype not implemented."); return 0;
+		default: GLR_CORE_ASSERT(false, "Datatype not implemented."); return 0;
 		}
 
 	}

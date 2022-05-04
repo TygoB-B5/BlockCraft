@@ -47,8 +47,8 @@ namespace blockcraft
 		_renderer->clear();
 		_controller->update(_renderer->getTime().getDeltaTime());
 
-		_world->setBlock(rand() % 256, 31, rand() % 256, 1);
-
+		_world->setBlock(rand() % 256, rand() % 32, rand() % 256, 1);
+		GLR_LOG(_renderer->getTime().getFPS())
 		_world->draw(&_controller->getCamera(), _renderer);
 
 		_renderer->update();

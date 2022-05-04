@@ -28,6 +28,8 @@ glm
 stb_image
 )
 
+message("-- GLR: Version 0.0.1")
+
 target_include_directories(${PROJECT_NAME} 
 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
