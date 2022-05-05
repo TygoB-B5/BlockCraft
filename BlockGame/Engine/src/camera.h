@@ -14,6 +14,10 @@ namespace blockcraft
 		void setPosition(const glm::vec3& position) { _position = position; recalculateViewMatrix(); }
 		void setRotation(const glm::vec3& rotation) { _rotation = rotation; recalculateViewMatrix(); }
 
+		const glm::vec3& getPosition() const { return _position; }
+		const glm::vec3& getRotation() const { return _rotation; }
+
+
 		const glm::mat4& getViewProjectionMatrix() const { return _viewProjectionMatrix; }
 		const glm::mat4& getProjectionMatrix() const { return _projectionMatrix; }
 		const glm::mat4& getViewMatrix() const { return _viewMatrix; }

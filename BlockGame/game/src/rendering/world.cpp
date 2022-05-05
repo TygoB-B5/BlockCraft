@@ -43,9 +43,11 @@ namespace blockcraft
 	// World
 
 
-	world::world()
-		: _blockLibrary(blockTextureLibrary())
+	world::world(uint32_t seed)
+		: _blockLibrary(blockTextureLibrary()),
+		_noise(seed, 512, 5, 0.5)
 	{
+		GLR_ASSERT(seed > 2, "Seed must be higher than 4");
 		init();
 	}
 
@@ -140,8 +142,6 @@ namespace blockcraft
 				return;
 			}
 		}
-
-		GLR_ASSERT(false, "Chunk does not exist on position");
 	}
 
 	void world::draw(const spectatorCamera* camera, const glr::renderer* renderer)

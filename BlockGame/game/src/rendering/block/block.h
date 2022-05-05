@@ -2,12 +2,19 @@
 
 #include "glm/glm.hpp"
 #include "engine.h"
+#include "blocktexturelibrary.h"
 
 namespace blockcraft
 {
 	struct blockData
 	{
-		static bool isTransparent(uint8_t id);
+		static inline bool isTransparent(uint8_t id)
+		{
+			if (id == ID_BLOCK_AIR)
+				return true;
+
+			return false;
+		}
 	};
 
 	// Constants

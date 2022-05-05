@@ -15,3 +15,4 @@
 #include "src/textureatlas.h"
 #include "src/camera.h"
 #include "src/noise.h"
+#include "src/profiler.h"

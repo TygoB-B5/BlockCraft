@@ -1,5 +1,5 @@
 #include "block.h"
-#include "blocktexturelibrary.h"
+
 
 namespace blockcraft
 {
@@ -51,13 +51,5 @@ namespace blockcraft
 		glm::vec3(1.0f, 0.0f, 1.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
 	};
-
-	bool blockData::isTransparent(uint8_t id)
-	{
-		if (id == ID_BLOCK_AIR)
-			return true;
-
-		return false;
-	}
 
 }

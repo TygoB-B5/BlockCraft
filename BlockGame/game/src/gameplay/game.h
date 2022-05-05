@@ -24,6 +24,5 @@ namespace blockcraft
 		glr::renderer* _renderer;
 		world* _world;
 		blockcraft::spectatorCameraController* _controller;
-
 	};
 }

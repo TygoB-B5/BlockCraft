@@ -6,7 +6,7 @@ namespace blockcraft
 {
 
 	chunk::chunk(const glm::vec2& cord, world* world)
-		: _chunkPosition(cord), _world(world), _hasNewVertexData(false), _hasNewIndexData(false)
+		: _chunkPosition(cord), _world(world), _hasNewVertexData(false), _hasNewIndexData(false), _cachedChunk(this)
 	{}
 
 	void chunk::init()
@@ -16,8 +16,8 @@ namespace blockcraft
 		generateChunkData();
 
 		calculateAllBlockVisibility();
-		constructRenderingData();
 
+		constructRenderingData();
 
 		// Recalculate all visible sides for surrounding chunks.
 		updateSurroundingChunks();
@@ -40,13 +40,13 @@ namespace blockcraft
 
 		
 
-		glr::perlinnoise2d noise(0.1, 256, 8, 2);
+		glr::perlinnoise2d* noise = _world->getNoise();
 
 		for (size_t x = 0; x < 16; x++)
 		{
 			for (size_t z = 0; z < 16; z++)
 			{
-				int h = noise.getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * CHUNK_HEIGHT - 1;
+				int h = noise->getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * CHUNK_HEIGHT - 1;
 				_blockData[x][h][z] = ID_BLOCK_GRASS;
 
 				for (size_t i = 0; i < h; i++)
@@ -78,12 +78,30 @@ namespace blockcraft
 		}
 	}
 
+	void chunk::calculateEdgeBlockVisibility()
+	{
+
+		// Loop through all the blocks on the edge of the chunk.
+		
+		for (size_t xz = 0; xz < CHUNK_SIZE; xz++)
+		{
+			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			{
+				updateVisibilityDataForBlock(0, y, xz);
+				updateVisibilityDataForBlock(CHUNK_SIZE - 1, y, xz);
+
+				updateVisibilityDataForBlock(xz, y, 0);
+				updateVisibilityDataForBlock(xz, y, CHUNK_SIZE - 1);
+			}
+		}
+	}
+
 	void chunk::constructRenderingData()
 	{
 
 		// Reset vertex and index buffer data.
-		_blockVertices.resize(0);
-		_blockIndices.resize(0);
+		memset(&_blockVertices[0], 0, sizeof(_blockVertices));
+		memset(&_blockIndices[0], 0, sizeof(_blockIndices));
 
 
 		// Enable has new data.
@@ -92,6 +110,8 @@ namespace blockcraft
 
 
 		uint32_t i = 0;
+		uint32_t vertSize = 0;
+		uint32_t elemSize = 0;
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
 			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
@@ -108,7 +128,7 @@ namespace blockcraft
 					for (size_t s = 0; s < 6; s++)
 					{
 
-						// Skip rendering if it is not visible.
+						// Skip rendering if the side is not visible.
 						if (!_visibleSides[z][y][x][s])
 							continue;
 
@@ -119,72 +139,78 @@ namespace blockcraft
 						std::array<glm::vec2, 4> tex = _world->getBlockLibrary()->getTextureCoordSideFromId(_blockData[x][y][z], s);
 
 
-						// Select which side to add based on index s.
+						// Select which side to add based on index vertSize.
 						switch (s)
 						{
 						case 0: // Bottom
-							_blockVertices.push_back(blockVertex({ sc::bottom[0].x + x, sc::bottom[0].y + y, sc::bottom[0].z + z }, tex[0]));
-							_blockVertices.push_back(blockVertex({ sc::bottom[1].x + x, sc::bottom[1].y + y, sc::bottom[1].z + z }, tex[1]));
-							_blockVertices.push_back(blockVertex({ sc::bottom[2].x + x, sc::bottom[2].y + y, sc::bottom[2].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::bottom[3].x + x, sc::bottom[3].y + y, sc::bottom[3].z + z }, tex[3]));
+							_blockVertices[vertSize]     = (blockVertex({sc::bottom[0].x + x, sc::bottom[0].y + y, sc::bottom[0].z + z}, tex[0]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::bottom[1].x + x, sc::bottom[1].y + y, sc::bottom[1].z + z }, tex[1]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::bottom[2].x + x, sc::bottom[2].y + y, sc::bottom[2].z + z }, tex[2]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::bottom[3].x + x, sc::bottom[3].y + y, sc::bottom[3].z + z }, tex[3]));
 							break;
 
 						case 1: // Top
-							_blockVertices.push_back(blockVertex({ sc::top[0].x + x, sc::top[0].y + y, sc::top[0].z + z }, tex[0]));
-							_blockVertices.push_back(blockVertex({ sc::top[1].x + x, sc::top[1].y + y, sc::top[1].z + z }, tex[1]));
-							_blockVertices.push_back(blockVertex({ sc::top[2].x + x, sc::top[2].y + y, sc::top[2].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::top[3].x + x, sc::top[3].y + y, sc::top[3].z + z }, tex[3]));
+							_blockVertices[vertSize]     = (blockVertex({ sc::top[0].x + x, sc::top[0].y + y, sc::top[0].z + z }, tex[0]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::top[1].x + x, sc::top[1].y + y, sc::top[1].z + z }, tex[1]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::top[2].x + x, sc::top[2].y + y, sc::top[2].z + z }, tex[2]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::top[3].x + x, sc::top[3].y + y, sc::top[3].z + z }, tex[3]));
 							break;
 
 						case 2: // Left
-							_blockVertices.push_back(blockVertex({ sc::left[0].x + x, sc::left[0].y + y, sc::left[0].z + z }, tex[1]));
-							_blockVertices.push_back(blockVertex({ sc::left[1].x + x, sc::left[1].y + y, sc::left[1].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::left[2].x + x, sc::left[2].y + y, sc::left[2].z + z }, tex[3]));
-							_blockVertices.push_back(blockVertex({ sc::left[3].x + x, sc::left[3].y + y, sc::left[3].z + z }, tex[0]));
+							_blockVertices[vertSize]     = (blockVertex({ sc::left[0].x + x, sc::left[0].y + y, sc::left[0].z + z }, tex[1]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::left[1].x + x, sc::left[1].y + y, sc::left[1].z + z }, tex[2]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::left[2].x + x, sc::left[2].y + y, sc::left[2].z + z }, tex[3]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::left[3].x + x, sc::left[3].y + y, sc::left[3].z + z }, tex[0]));
 							break;
 
 						case 3: // Right
-							_blockVertices.push_back(blockVertex({ sc::right[0].x + x, sc::right[0].y + y, sc::right[0].z + z }, tex[1]));
-							_blockVertices.push_back(blockVertex({ sc::right[1].x + x, sc::right[1].y + y, sc::right[1].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::right[2].x + x, sc::right[2].y + y, sc::right[2].z + z }, tex[3]));
-							_blockVertices.push_back(blockVertex({ sc::right[3].x + x, sc::right[3].y + y, sc::right[3].z + z }, tex[0]));
+							_blockVertices[vertSize]     = (blockVertex({ sc::right[0].x + x, sc::right[0].y + y, sc::right[0].z + z }, tex[1]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::right[1].x + x, sc::right[1].y + y, sc::right[1].z + z }, tex[2]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::right[2].x + x, sc::right[2].y + y, sc::right[2].z + z }, tex[3]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::right[3].x + x, sc::right[3].y + y, sc::right[3].z + z }, tex[0]));
 							break;
 
 						case 4: // Front
-							_blockVertices.push_back(blockVertex({ sc::front[0].x + x, sc::front[0].y + y, sc::front[0].z + z }, tex[0]));
-							_blockVertices.push_back(blockVertex({ sc::front[1].x + x, sc::front[1].y + y, sc::front[1].z + z }, tex[1]));
-							_blockVertices.push_back(blockVertex({ sc::front[2].x + x, sc::front[2].y + y, sc::front[2].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::front[3].x + x, sc::front[3].y + y, sc::front[3].z + z }, tex[3]));
+							_blockVertices[vertSize]     = (blockVertex({ sc::front[0].x + x, sc::front[0].y + y, sc::front[0].z + z }, tex[0]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::front[1].x + x, sc::front[1].y + y, sc::front[1].z + z }, tex[1]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::front[2].x + x, sc::front[2].y + y, sc::front[2].z + z }, tex[2]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::front[3].x + x, sc::front[3].y + y, sc::front[3].z + z }, tex[3]));
 							break;
 
 						case 5: // Back
-							_blockVertices.push_back(blockVertex({ sc::back[0].x + x, sc::back[0].y + y, sc::back[0].z + z }, tex[2]));
-							_blockVertices.push_back(blockVertex({ sc::back[1].x + x, sc::back[1].y + y, sc::back[1].z + z }, tex[3]));
-							_blockVertices.push_back(blockVertex({ sc::back[2].x + x, sc::back[2].y + y, sc::back[2].z + z }, tex[0]));
-							_blockVertices.push_back(blockVertex({ sc::back[3].x + x, sc::back[3].y + y, sc::back[3].z + z }, tex[1]));
+							_blockVertices[vertSize]     = (blockVertex({ sc::back[0].x + x, sc::back[0].y + y, sc::back[0].z + z }, tex[2]));
+							_blockVertices[vertSize + 1] = (blockVertex({ sc::back[1].x + x, sc::back[1].y + y, sc::back[1].z + z }, tex[3]));
+							_blockVertices[vertSize + 2] = (blockVertex({ sc::back[2].x + x, sc::back[2].y + y, sc::back[2].z + z }, tex[0]));
+							_blockVertices[vertSize + 3] = (blockVertex({ sc::back[3].x + x, sc::back[3].y + y, sc::back[3].z + z }, tex[1]));
 							break;
 						}
 
-						// Update index buffer and add indices for 1 side.
-						_blockIndices.push_back(i);
-						_blockIndices.push_back(i + 1);
-						_blockIndices.push_back(i + 2);
-						_blockIndices.push_back(i + 2);
-						_blockIndices.push_back(i + 3);
-						_blockIndices.push_back(i);
+						vertSize += 4;
 
+						// Update index buffer and add indices for 1 side.
+						_blockIndices[elemSize]     = (i);
+						_blockIndices[elemSize + 1] = (i + 1);
+						_blockIndices[elemSize + 2] = (i + 2);
+						_blockIndices[elemSize + 3] = (i + 2);
+						_blockIndices[elemSize + 4] = (i + 3);
+						_blockIndices[elemSize + 5] = (i);
+
+						elemSize += 6;
 						i += 4;
 					}
 				}
 			}
+
+			_blockVerticesSize = vertSize;
+			_blockIndicesSize = elemSize;
 		}
 	}
 
 	uint32_t chunk::getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint32_t x, uint32_t y, uint32_t z)
 	{
-
+	
 		// Get chunk from position.
-		chunk* c = _world->getChunkFromPosition(chunkPosition);
+		chunk* c = _world->getChunkFromPosition(chunkPosition);;
 
 
 		// If chunk is found return id from the specified position.
@@ -193,7 +219,7 @@ namespace blockcraft
 			return c->getBlockDataAtPosition(x, y, z);
 		}
 			
-		return ID_BLOCK_AIR;
+		return 257;
 	}
 
 	void chunk::remove()
@@ -207,10 +233,6 @@ namespace blockcraft
 
 	void chunk::updateSurroundingChunks()
 	{
-
-		// TODO make it only refresh the edges instead of the whole chunk.
-
-
 		// Get surrounding chunks data.
 		std::array<chunk*, 4> surroundingChunks({
 			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y + 1 }),
@@ -219,13 +241,12 @@ namespace blockcraft
 			_world->getChunkFromPosition({ _chunkPosition.x + 1, _chunkPosition.y }),
 			});
 
-
 		// If chunk is not nullptr update it.
-		for (chunk*& c : surroundingChunks)
+		for (chunk* c : surroundingChunks)
 		{
 			if (c)
 			{
-				c->calculateAllBlockVisibility();
+				c->calculateEdgeBlockVisibility();
 				c->constructRenderingData();
 			}
 		}
@@ -234,13 +255,13 @@ namespace blockcraft
 	std::pair<float*, uint32_t> chunk::getChunkVertexData()
 	{
 		_hasNewVertexData = false;
-		return { (float*)&_blockVertices[0], _blockVertices.size() * sizeof(blockVertex) / sizeof(float) };
+		return { (float*)&_blockVertices[0], _blockVerticesSize * sizeof(blockVertex)};
 	}
 
 	std::pair<uint32_t*, uint32_t> chunk::getChunkIndexData()
 	{
 		_hasNewIndexData = false;
-		return { (uint32_t*)&_blockIndices[0], _blockIndices.size() };
+		return { (uint32_t*)&_blockIndices[0], _blockIndicesSize };
 	}
 
 	glm::mat4 chunk::getModelMatrix() const

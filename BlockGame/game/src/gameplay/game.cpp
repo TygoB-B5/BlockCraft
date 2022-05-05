@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include <thread>
+
 namespace blockcraft
 {
 
@@ -17,16 +19,7 @@ namespace blockcraft
 
 
 		// Create world and generate chunks.
-		_world = new world();
-
-		for (size_t x = 0; x < 16; x++)
-		{
-			for (size_t z = 0; z < 16; z++)
-			{
-				_world->addChunk({ x, z });
-			}
-		}
-
+		_world = new world(34535);
 
 		// Create spectator controller.
 		_controller = new spectatorCameraController(_renderer->getInput(), 100, (float)_renderer->getWindow().getWidth() / (float)_renderer->getWindow().getHeight(), 0.001f, 10000);
@@ -47,6 +40,24 @@ namespace blockcraft
 		// Game loop.
 		_renderer->clear();
 		_controller->update(_renderer->getTime().getDeltaTime());
+
+		GLR_LOG(_renderer->getTime().getFPS())
+
+		for (int x = -128; x < 128; x++)
+		{
+			for (int z = -128; z < 128; z++)
+			{
+				glm::vec2 pos = { x * 16, z * 16 };
+
+				if (glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128 &&
+					_world->getChunkFromPosition({ x, z }) == nullptr)
+					_world->addChunk({ x, z }); 
+			}
+		}
+
+
+
+
 
 		_world->draw(&_controller->getCamera(), _renderer);
 
