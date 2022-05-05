@@ -34,28 +34,45 @@ namespace blockcraft
 		delete(_controller);
 	}
 
-
 	void game::update()
 	{
+
 		// Game loop.
 		_renderer->clear();
 		_controller->update(_renderer->getTime().getDeltaTime());
 
-		GLR_LOG(_renderer->getTime().getFPS())
 
-		for (int x = -128; x < 128; x++)
+		// Temporary chunk rendering thingie.
+		
+		for (int x = -64; x < 64; x++)
 		{
-			for (int z = -128; z < 128; z++)
+			for (int z = -64; z < 64; z++)
 			{
-				glm::vec2 pos = { x * 16, z * 16 };
+				glm::vec2 pos = { x * CHUNK_SIZE, z * CHUNK_SIZE };
+				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128;
+				 
+				if (inRange && !_world->getChunkFromPosition({ x, z }))
+				{
+					_world->addChunk({ x, z });
+				}
 
-				if (glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128 &&
-					_world->getChunkFromPosition({ x, z }) == nullptr)
-					_world->addChunk({ x, z }); 
+				if (!inRange && _world->getChunkFromPosition({ x, z }))
+				{
+					_world->removeChunk({ x, z });
+				}
+
 			}
 		}
 
-
+		GLR_LOG(_controller->getCamera().getPosition().x << " - " << _controller->getCamera().getPosition().z)
+		
+		if (_renderer->getInput()->isKeyHeld(KEY_SPACE))
+		{
+			int x = _controller->getCamera().getPosition().x;
+			int y = _controller->getCamera().getPosition().y;
+			int z = _controller->getCamera().getPosition().z;
+			_world->setBlock(x, y, z, ID_BLOCK_GRASS);
+		}
 
 
 

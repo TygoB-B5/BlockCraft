@@ -27,13 +27,13 @@ namespace blockcraft
 	{
 
 		// Block Layers
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			for (uint8_t y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
+				for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 				{
-						_blockData[x][y][z] = ID_BLOCK_AIR;
+					_blockData[x][y][z] = ID_BLOCK_AIR;
 				}
 			}
 		}
@@ -42,14 +42,14 @@ namespace blockcraft
 
 		glr::perlinnoise2d* noise = _world->getNoise();
 
-		for (size_t x = 0; x < 16; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t z = 0; z < 16; z++)
+			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
 				int h = noise->getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * CHUNK_HEIGHT - 1;
 				_blockData[x][h][z] = ID_BLOCK_GRASS;
 
-				for (size_t i = 0; i < h; i++)
+				for (uint8_t i = 0; i < h; i++)
 				{
 					_blockData[x][i][z] = ID_BLOCK_STONE;
 				}
@@ -66,11 +66,11 @@ namespace blockcraft
 
 	void chunk::calculateAllBlockVisibility()
 	{
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			for (uint8_t y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
+				for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 				{
 					updateVisibilityDataForBlock(x, y, z);
 				}
@@ -83,9 +83,9 @@ namespace blockcraft
 
 		// Loop through all the blocks on the edge of the chunk.
 		
-		for (size_t xz = 0; xz < CHUNK_SIZE; xz++)
+		for (uint8_t xz = 0; xz < CHUNK_SIZE; xz++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			for (uint8_t y = 0; y < CHUNK_HEIGHT; y++)
 			{
 				updateVisibilityDataForBlock(0, y, xz);
 				updateVisibilityDataForBlock(CHUNK_SIZE - 1, y, xz);
@@ -112,11 +112,12 @@ namespace blockcraft
 		uint32_t i = 0;
 		uint32_t vertSize = 0;
 		uint32_t elemSize = 0;
-		for (size_t x = 0; x < CHUNK_SIZE; x++)
+
+		for (uint8_t x = 0; x < CHUNK_SIZE; x++)
 		{
-			for (size_t y = 0; y < CHUNK_HEIGHT; y++)
+			for (uint8_t y = 0; y < CHUNK_HEIGHT; y++)
 			{
-				for (size_t z = 0; z < CHUNK_SIZE; z++)
+				for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 				{
 
 					// Skip loop if block is air.
@@ -125,7 +126,7 @@ namespace blockcraft
 
 
 					// Add sides that need to be rendered.
-					for (size_t s = 0; s < 6; s++)
+					for (uint8_t s = 0; s < 6; s++)
 					{
 
 						// Skip rendering if the side is not visible.
@@ -206,7 +207,7 @@ namespace blockcraft
 		}
 	}
 
-	uint32_t chunk::getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint32_t x, uint32_t y, uint32_t z)
+	uint8_t chunk::getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint8_t x, uint8_t y, uint8_t z)
 	{
 	
 		// Get chunk from position.
@@ -219,20 +220,12 @@ namespace blockcraft
 			return c->getBlockDataAtPosition(x, y, z);
 		}
 			
-		return 257;
-	}
-
-	void chunk::remove()
-	{
-		// Write all block data to air blocks.
-		memset(&_blockData[0][0][0], ID_BLOCK_AIR, sizeof(_blockData));
-
-
-		updateSurroundingChunks();
+		return UCHAR_MAX;
 	}
 
 	void chunk::updateSurroundingChunks()
 	{
+
 		// Get surrounding chunks data.
 		std::array<chunk*, 4> surroundingChunks({
 			_world->getChunkFromPosition({ _chunkPosition.x, _chunkPosition.y + 1 }),
@@ -250,6 +243,7 @@ namespace blockcraft
 				c->constructRenderingData();
 			}
 		}
+
 	}
 
 	std::pair<float*, uint32_t> chunk::getChunkVertexData()
@@ -270,8 +264,11 @@ namespace blockcraft
 		return glm::translate(glm::mat4(1.0f), glm::vec3(_chunkPosition.x * CHUNK_SIZE, 0, _chunkPosition.y * CHUNK_SIZE));
 	}
 
-	void chunk::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
+	void chunk::setBlock(uint8_t x, uint8_t  y, uint8_t  z, uint8_t id)
 	{
+ 		GLR_ASSERT(!(x > CHUNK_SIZE - 1), "Outside of chunk range");
+   		GLR_ASSERT(!(z > CHUNK_SIZE - 1), "Outside of chunk range");
+		GLR_ASSERT(!(y > CHUNK_HEIGHT - 1), "Outside of chunk range");
 
 		// Set right block to id.
 		_blockData[x][y][z] = id;
@@ -308,7 +305,7 @@ namespace blockcraft
 		constructRenderingData();
 	}
 
-	void chunk::updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z)
+	void chunk::updateVisibilityDataForBlock(uint8_t x, uint8_t y, uint8_t z)
 	{
 
 		// Hide all sides if the block is air.

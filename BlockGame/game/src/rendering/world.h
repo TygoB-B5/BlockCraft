@@ -1,11 +1,12 @@
 #pragma once
 
 #include "engine.h"
-#include "chunk.h"
 #include "glm/glm.hpp"
-#include <vector>
 #include "block/blocktexturelibrary.h"
+#include "chunk.h"
+#include <map>
 
+#define MAX_WORLD_CHUNK_SIZE SHRT_MAX
 
 namespace blockcraft
 {
@@ -26,11 +27,11 @@ namespace blockcraft
 
 		void draw(const spectatorCamera* camera, const glr::renderer* renderer);
 
-		void setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id);
+		void setBlock(int32_t x, uint8_t y, int32_t z, uint8_t id);
 
-		const std::vector<chunk*>* getChunks() const { return &_chunks; }
+		const std::map<int, chunk*>* getChunks() const { return &_chunkMap; }
 
-		chunk* getChunkFromPosition(const glm::vec2& chunkPosition);
+		inline chunk* getChunkFromPosition(const glm::vec2& chunkPosition);
 
 		blockTextureLibrary* getBlockLibrary()
 		{
@@ -45,11 +46,12 @@ namespace blockcraft
 
 	private:
 		// All the initialized chunks.
-		std::vector<chunk*> _chunks;
+		std::map<int32_t, chunk*> _chunkMap;
 
 		// Rendering data.
-		std::vector<glr::elementBuffer*> _chunkElementBuffers;
-		std::vector<glr::vertexBuffer*> _chunkVertexBuffer;
+		std::map<chunk*, glr::elementBuffer*> _chunkElementBuffers;
+		std::map<chunk*, glr::vertexBuffer*> _chunkVertexBuffer;
+
 		glr::vertexLayout<2> _vertexLayout;
 		glr::shader _shader;
 		static const char* _vertexShaderSrc;

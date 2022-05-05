@@ -1,7 +1,7 @@
 #include "world.h"
 
 namespace blockcraft
-{
+{	
 
 	const char* world::_vertexShaderSrc = R"(
 
@@ -55,19 +55,19 @@ namespace blockcraft
 	{
 
 		// Delete all heap objects.
-		for (auto& chunk : _chunks)
-			delete(chunk);
+		for (auto& chunk : _chunkMap)
+			delete(chunk.second);
 
 		for (auto& elemBuffer : _chunkElementBuffers)
-			delete(elemBuffer);
+			delete(elemBuffer.second);
 
 		for (auto& vertBuffer : _chunkVertexBuffer)
-			delete(vertBuffer);
+			delete(vertBuffer.second);
 
 		// Clear vector elements.
 		_chunkElementBuffers.clear();
 		_chunkVertexBuffer.clear();
-		_chunks.clear();
+		_chunkMap.clear();
 
 	}
 
@@ -90,18 +90,17 @@ namespace blockcraft
 	chunk* world::addChunk(const glm::vec2& cords)
 	{
 
-
 #ifdef GLR_DEBUG
+
 		// Check if chunk does not already exist on position
-		for (chunk*& chunk : _chunks)
-		{
-			GLR_ASSERT(!(chunk->getChunkPosition() == cords), "Chunk already exists on position.");
-		}
+		if(_chunkMap.find(cords.x * MAX_WORLD_CHUNK_SIZE + cords.y) != _chunkMap.end())
+			GLR_ASSERT(false, "Chunk already exists on position.");
+
 #endif
 
 		// Create chunk and add all the buffers and chunk.
 		chunk* c = new chunk(cords, this);
-		_chunks.push_back(c);
+		_chunkMap.insert(std::pair<int, chunk*>(cords.x * MAX_WORLD_CHUNK_SIZE + cords.y, c));
 
 		
 		// Initialize the chunk after the object has been added to the chunk array.
@@ -109,9 +108,8 @@ namespace blockcraft
 
 
 		// Create element and vertex buffer with the chunk data.
-		_chunkElementBuffers.push_back(new glr::elementBuffer(c->getChunkIndexData().first, c->getChunkIndexData().second));
-		_chunkVertexBuffer.push_back(new glr::vertexBuffer(c->getChunkVertexData().first, c->getChunkVertexData().second));
-
+		_chunkElementBuffers.insert(std::pair<chunk*, glr::elementBuffer*>(c, new glr::elementBuffer(c->getChunkIndexData().first, c->getChunkIndexData().second)));
+		_chunkVertexBuffer.insert(std::pair<chunk*, glr::vertexBuffer*>(c, new glr::vertexBuffer(c->getChunkVertexData().first, c->getChunkVertexData().second)));
 
 		return c;
 	}
@@ -119,29 +117,28 @@ namespace blockcraft
 	void world::removeChunk(const glm::vec2& cords)
 	{
 
-		// Find chunk with coord index and delete every object associated with it.
-		for (size_t i = 0; i < _chunks.size(); i++)
+		// Get chunk.
+		chunk* chunk = getChunkFromPosition(cords);
+
+
+		// If chunk does not exist at cords return;
+		if (!chunk)
 		{
-			if (_chunks[i]->getChunkPosition() == cords)
-			{
-
-				// Remove chunk and update surrounding chunk states.
-				_chunks[i]->remove();
-
-
-				// Free chunk elembuffer and vertbuffer memory.
-				delete(_chunks[i]);
-				delete(_chunkElementBuffers[i]);
-				delete(_chunkVertexBuffer[i]);
-
-				// Erase vector objects.
-				_chunks.erase(_chunks.begin() + i);
-				_chunkElementBuffers.erase(_chunkElementBuffers.begin() + i);
-				_chunkVertexBuffer.erase(_chunkVertexBuffer.begin() + i);
-
-				return;
-			}
+			return;
 		}
+
+
+		// Free chunk elembuffer and vertbuffer memory.
+		delete(chunk);
+		delete(_chunkElementBuffers[chunk]);
+		delete(_chunkVertexBuffer[chunk]);
+
+		// Clear maps.
+		_chunkMap.erase(cords.x * MAX_WORLD_CHUNK_SIZE + cords.y);
+		_chunkElementBuffers.erase(chunk);
+		_chunkVertexBuffer.erase(chunk);
+
+		return;
 	}
 
 	void world::draw(const spectatorCamera* camera, const glr::renderer* renderer)
@@ -160,81 +157,95 @@ namespace blockcraft
 
 
 		// Draw chunks.
-		for (size_t i = 0; i < _chunks.size(); i++)
+		for (auto& chunkMap : _chunkMap)
 		{
+			chunk* c = chunkMap.second;
 
 			// Bind element and vertex buffer
 			_shader.bind();
 
 			// Get new vertex and index data if there is any.
-			if(_chunks[i]->getHasNewVertexData())
-				_chunkVertexBuffer[i]->setVertexData(_chunks[i]->getChunkVertexData().first, _chunks[i]->getChunkVertexData().second);
+			if(c->getHasNewVertexData())
+				_chunkVertexBuffer[c]->setVertexData(c->getChunkVertexData().first, c->getChunkVertexData().second);
 
-			if (_chunks[i]->getHasNewIndexData())
-				_chunkElementBuffers[i]->setElementData(_chunks[i]->getChunkIndexData().first, _chunks[i]->getChunkIndexData().second);
+			if (c->getHasNewIndexData())
+				_chunkElementBuffers[c]->setElementData(c->getChunkIndexData().first, c->getChunkIndexData().second);
 
-			_chunkVertexBuffer[i]->bind();
-			_chunkElementBuffers[i]->bind();
+			_chunkVertexBuffer[c]->bind();
+			_chunkElementBuffers[c]->bind();
 
 			_vertexLayout.bind();
 
 
 			// Set ModelMatrix and ViewMatrix.
-			glm::mat4 model = _chunks[i]->getModelMatrix();
+			glm::mat4 model = c->getModelMatrix();
 			_shader.setUniformMat4("uViewMatrix", &viewProjection[0][0]);
 			_shader.setUniformMat4("uModelMatrix", &model[0][0]);
 
 
 			// Draw elements
-			renderer->draw(_chunkElementBuffers[i]->getElementAmount());
-
-
-			// Unbind.
-			_shader.unbind();
-			_chunkVertexBuffer[i]->unbind();
-			_chunkElementBuffers[i]->unbind();
+			renderer->draw(_chunkElementBuffers[c]->getElementAmount());
 
 		}
 	}
 
-	void world::setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id)
+	void world::setBlock(int32_t x, uint8_t  y, int32_t z, uint8_t id)
 	{
+		
+#ifdef GLR_DEBUG
 
-		GLR_CORE_ASSERT((y <= CHUNK_HEIGHT), "Block is placed above maximum height.");
+		if (abs(x) > MAX_WORLD_CHUNK_SIZE * CHUNK_SIZE ||
+			abs(z) > MAX_WORLD_CHUNK_SIZE * CHUNK_SIZE)
+			GLR_ASSERT(false, "Block position outside of the world.")
 
-		// Get chunk position data.
-		uint32_t chunkX = x / CHUNK_SIZE;
-		uint32_t chunkZ = z / CHUNK_SIZE;
+#endif
 
+
+		// Ignore if block is placed above the maximum chunk height.
+		if (y >= CHUNK_HEIGHT)
+			return;
+
+
+		// Get positive chunk position data.
+		int16_t chunkX = abs(x / CHUNK_SIZE);
+		int16_t chunkZ = abs(z / CHUNK_SIZE);
+
+
+		// If position is negative reverse the chunk position. (Done this way because negative division rounding is wacky)
+		chunkX = x < 0 ? -chunkX - 1 : chunkX;
+		chunkZ = z < 0 ? -chunkZ - 1 : chunkZ;
 
 		// Set block on right chunk based on data.
-		for (chunk*& chunk : _chunks)
+		chunk* chunk = getChunkFromPosition({ chunkX, chunkZ });
+
+		GLR_CORE_ASSERT(chunk, "Block position outside of loaded chunk range");
+
+		if (chunk)
 		{
+
+			// Create chunk positions and mod by the chunk size.
+			int8_t xChunkPos = x % CHUNK_SIZE;
+			int8_t zChunkPos = z % CHUNK_SIZE;
+
+
+			// Convert to the right chunk coordinates if the value is negative.
+			xChunkPos = xChunkPos < 0 ? CHUNK_SIZE - (-xChunkPos) : xChunkPos;
+			zChunkPos = zChunkPos < 0 ? CHUNK_SIZE - (-zChunkPos) : zChunkPos;
+
 			
-			// if chunkposition matches
-			if (chunk->getChunkPosition().x == chunkX
-				&& chunk->getChunkPosition().y == chunkZ)
-			{
-				chunk->setBlock(x % CHUNK_SIZE, y, z % CHUNK_SIZE, id);
-
-				return;
-			}
-
+			// Set block on chunk.
+			chunk->setBlock((uint8_t)xChunkPos, (uint8_t)y, (uint8_t)zChunkPos, id);
 		}
 
-		GLR_CORE_ASSERT(false, "Block position outside of loaded chunk range");
 	}
 
 	chunk* world::getChunkFromPosition(const glm::vec2& chunkPosition)
 	{
 
-		// Get chunk if available at position
-		for (chunk*& chunk : _chunks)
-		{
-			if (chunkPosition == chunk->getChunkPosition())
-				return chunk;
-		}
+		// check if chunk exists at position.
+		if (_chunkMap.find(chunkPosition.x * MAX_WORLD_CHUNK_SIZE + chunkPosition.y) == _chunkMap.end())
+			return nullptr;
 
-		return nullptr;
+		return _chunkMap[chunkPosition.x * MAX_WORLD_CHUNK_SIZE + chunkPosition.y];
 	}
 }

@@ -6,7 +6,7 @@
 #include "glm/glm.hpp"
 #include <vector>
 
-#define CHUNK_HEIGHT 128
+#define CHUNK_HEIGHT 16
 #define CHUNK_SIZE 16
 
 
@@ -28,17 +28,15 @@ namespace blockcraft
 
 		inline void constructRenderingData();
 
-		inline void updateVisibilityDataForBlock(uint32_t x, uint32_t y, uint32_t z);
+		inline void updateVisibilityDataForBlock(uint8_t x, uint8_t y, uint8_t z);
 
-		inline uint32_t getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint32_t x, uint32_t y, uint32_t z);
+		inline uint8_t getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint8_t x, uint8_t y, uint8_t z);
 
 		inline void calculateAllBlockVisibility();
 
 		inline void calculateEdgeBlockVisibility();
 
 	public:
-
-		void remove();
 
 		void updateSurroundingChunks();
 
@@ -48,14 +46,14 @@ namespace blockcraft
 
 		glm::mat4 getModelMatrix() const;
 
-		void setBlock(uint32_t x, uint32_t y, uint32_t z, uint32_t id);
+		void setBlock(uint8_t x, uint8_t y, uint8_t z, uint8_t id);
 
 		bool getHasNewVertexData() const { return _hasNewVertexData; }
 		bool getHasNewIndexData() const { return _hasNewIndexData; }
 
 		glm::vec2 getChunkPosition() const { return _chunkPosition; }
 
-		inline uint32_t getBlockDataAtPosition(uint32_t x, uint32_t y, uint32_t z) const { return _blockData[x][y][z]; }
+ 		inline uint8_t getBlockDataAtPosition(uint8_t x, uint8_t y, uint8_t z) const { return _blockData[x][y][z]; }
 
 	private:
 
@@ -71,7 +69,7 @@ namespace blockcraft
 
 
 		// Block data and block visibility.
-		uint32_t _blockData[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
+		uint8_t _blockData[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
 		bool _visibleSides[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE][6];
 
 		

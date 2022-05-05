@@ -14,10 +14,13 @@ namespace blockcraft
 
 		void update(float deltaTime);
 
+		void setPosition(const glm::vec3& position) { _cameraPosition = position; }
+		void setRotation(const glm::vec3& rotation) { _cameraRotation= rotation; }
+
 		const glm::vec3& getForward();
 		const glm::vec3& getRight();
 		const glm::vec3& getUp();
-		const spectatorCamera& getCamera() const { return _camera; }
+		const spectatorCamera& getCamera() { return _camera; }
 
 	private:
 
