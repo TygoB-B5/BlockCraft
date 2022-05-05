@@ -1,5 +1,6 @@
 #pragma once
 
+
 // NOTE:
 // 
 //		Do not change CHUNK_SIZE or CHUNK_HEIGHT higher than,
@@ -7,11 +8,9 @@
 //
 //
 
-#define CHUNK_HEIGHT 
 
-
+#define CHUNK_HEIGHT 128
 #define CHUNK_SIZE 16
-
 
 #define MAX_WORLD_CHUNK_SIZE SHRT_MAX
 
