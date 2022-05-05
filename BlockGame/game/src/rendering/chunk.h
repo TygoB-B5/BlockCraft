@@ -6,7 +6,7 @@
 #include "glm/glm.hpp"
 #include <vector>
 
-#define CHUNK_HEIGHT 32
+#define CHUNK_HEIGHT 128
 #define CHUNK_SIZE 16
 
 
@@ -66,6 +66,9 @@ namespace blockcraft
 
 		bool _visibleSides[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE][6];
 		uint32_t _blockData[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
+
+
+		glr::perlinnoise1d* _noise;
 	};
 
 }

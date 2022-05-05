@@ -1,6 +1,7 @@
 #include "chunk.h"
 #include "glm/gtc/matrix_transform.hpp"
 
+
 namespace blockcraft
 {
 
@@ -25,9 +26,6 @@ namespace blockcraft
 	void chunk::generateChunkData()
 	{
 
-		// TODO Turn this in to some proper rendering with noise maps.
-
-
 		// Block Layers
 		for (size_t x = 0; x < CHUNK_SIZE; x++)
 		{
@@ -35,20 +33,35 @@ namespace blockcraft
 			{
 				for (size_t z = 0; z < CHUNK_SIZE; z++)
 				{
-					if (y < 10)
-						_blockData[x][y][z] = ID_BLOCK_STONE;
-					else
-						if (y < 16)
-							_blockData[x][y][z] = ID_BLOCK_DIRT;
-						else
-							if (y == 16)
-								_blockData[x][y][z] = ID_BLOCK_GRASS;
-							else
-								if(y > 16)
-									_blockData[x][y][z] = ID_BLOCK_AIR;
+						_blockData[x][y][z] = ID_BLOCK_AIR;
 				}
 			}
 		}
+
+		
+
+		glr::perlinnoise2d noise(0.1, 256, 8, 2);
+
+		for (size_t x = 0; x < 16; x++)
+		{
+			for (size_t z = 0; z < 16; z++)
+			{
+				int h = noise.getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * CHUNK_HEIGHT - 1;
+				_blockData[x][h][z] = ID_BLOCK_GRASS;
+
+				for (size_t i = 0; i < h; i++)
+				{
+					_blockData[x][i][z] = ID_BLOCK_STONE;
+				}
+
+
+				for (int i = h - 4; i < h; i++)
+				{
+					_blockData[x][i < 0 ? 0 : i][z] = ID_BLOCK_DIRT;
+				}
+			}
+		}
+		
 	}
 
 	void chunk::calculateAllBlockVisibility()

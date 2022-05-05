@@ -14,3 +14,4 @@
 #include "src/renderer.h"
 #include "src/textureatlas.h"
 #include "src/camera.h"
+#include "src/noise.h"
