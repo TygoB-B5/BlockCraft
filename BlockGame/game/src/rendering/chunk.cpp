@@ -96,12 +96,41 @@ namespace blockcraft
 		}
 	}
 
+	inline void chunk::calculateSurroundingBlockVisibility(uint8_t x, uint8_t y, uint8_t z)
+	{
+		// Update the blocks surrounding this block.
+
+		// Left
+		if (x > 0)
+			updateVisibilityDataForBlock(x - 1, y, z);
+
+		// Front
+		if (y > 0)
+			updateVisibilityDataForBlock(x, y - 1, z);
+
+		// Back
+		if (z > 0)
+			updateVisibilityDataForBlock(x, y, z - 1);
+
+		// Right
+		if (x < CHUNK_SIZE - 1)
+			updateVisibilityDataForBlock(x + 1, y, z);
+
+		// Top
+		if (y < CHUNK_HEIGHT - 1)
+			updateVisibilityDataForBlock(x, y + 1, z);
+
+		// Bottom
+		if (z < CHUNK_SIZE - 1)
+			updateVisibilityDataForBlock(x, y, z + 1);
+	}
+
 	void chunk::constructRenderingData()
 	{
 
 		// Reset vertex and index buffer data.
 		memset(&_blockVertices[0], 0, sizeof(_blockVertices));
-		memset(&_blockIndices[0], 0, sizeof(_blockIndices));
+		memset(&_blockElements[0], 0, sizeof(_blockElements));
 
 
 		// Enable has new data.
@@ -109,7 +138,8 @@ namespace blockcraft
 		_hasNewIndexData = true;
 
 
-		uint32_t i = 0;
+		// Create index variables.
+		uint32_t elemIndex = 0;
 		uint32_t vertSize = 0;
 		uint32_t elemSize = 0;
 
@@ -133,14 +163,15 @@ namespace blockcraft
 						if (!_visibleSides[z][y][x][s])
 							continue;
 
-						typedef blockSides sc;
-
 
 						// Get required texture cords for current side.
 						std::array<glm::vec2, 4> tex = _world->getBlockLibrary()->getTextureCoordSideFromId(_blockData[x][y][z], s);
 
 
-						// Select which side to add based on index vertSize.
+						typedef blockSides sc;
+
+
+						// Select which side to add based on index s.
 						switch (s)
 						{
 						case 0: // Bottom
@@ -186,24 +217,30 @@ namespace blockcraft
 							break;
 						}
 
+
+						// Increment vert size by 4 to allow a new side to be filled.
 						vertSize += 4;
 
-						// Update index buffer and add indices for 1 side.
-						_blockIndices[elemSize]     = (i);
-						_blockIndices[elemSize + 1] = (i + 1);
-						_blockIndices[elemSize + 2] = (i + 2);
-						_blockIndices[elemSize + 3] = (i + 2);
-						_blockIndices[elemSize + 4] = (i + 3);
-						_blockIndices[elemSize + 5] = (i);
 
+						// Update index buffer and add indices for 1 side.
+						_blockElements[elemSize]     = (elemIndex);
+						_blockElements[elemSize + 1] = (elemIndex + 1);
+						_blockElements[elemSize + 2] = (elemIndex + 2);
+						_blockElements[elemSize + 3] = (elemIndex + 2);
+						_blockElements[elemSize + 4] = (elemIndex + 3);
+						_blockElements[elemSize + 5] = (elemIndex);
+
+						elemIndex += 4;
 						elemSize += 6;
-						i += 4;
+
 					}
 				}
 			}
 
+			// Set Index and Vertex size to the counted size.
 			_blockVerticesSize = vertSize;
-			_blockIndicesSize = elemSize;
+			_blockElementsSize = elemSize;
+
 		}
 	}
 
@@ -255,7 +292,7 @@ namespace blockcraft
 	std::pair<uint32_t*, uint32_t> chunk::getChunkIndexData()
 	{
 		_hasNewIndexData = false;
-		return { (uint32_t*)&_blockIndices[0], _blockIndicesSize };
+		return { (uint32_t*)&_blockElements[0], _blockElementsSize };
 	}
 
 	glm::mat4 chunk::getModelMatrix() const
@@ -273,34 +310,10 @@ namespace blockcraft
 		// Set right block to id.
 		_blockData[x][y][z] = id;
 
-
-		// Update the blocks surrounding this block.
-
-		if (x > 0)
-			updateVisibilityDataForBlock(x - 1, y, z);
-
-		if (y > 0)
-			updateVisibilityDataForBlock(x, y - 1, z);
-
-		if (z > 0)
-			updateVisibilityDataForBlock(x, y, z - 1);
-
-		if (x < CHUNK_SIZE - 1)
-			updateVisibilityDataForBlock(x + 1, y, z);
-
-		if (y < CHUNK_HEIGHT - 1)
-			updateVisibilityDataForBlock(x, y + 1, z);
-
-		if (z < CHUNK_SIZE - 1)
-			updateVisibilityDataForBlock(x, y, z + 1);
-			
+		// Update required visibility data
+		calculateSurroundingBlockVisibility(x, y, z);
 		updateVisibilityDataForBlock(x, y, z);
 
-		//TODO Make this more efficient.
-		//
-		// Now it recalculates every vertex every time you place a block, this is innefficient.
-		// Make it so it only updates the vertices around it.
-		//
 
 		constructRenderingData();
 	}

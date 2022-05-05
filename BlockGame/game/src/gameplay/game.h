@@ -3,6 +3,22 @@
 #include "rendering/world.h"
 #include "gameplay/spectatorcameracontroller.h"
 
+
+
+
+	////////////////////////////////////////////////////////////
+	// NOTE:                                                  //
+	//           BlockCraft.                                  //
+	//           Made by Tygo Boons 2022. <3                  //
+	//                                                        //
+	//           Libs:                                        //
+	//           OpenGL, Glad, GLFW, GLM and stb_image.       //
+	//                                                        //
+	////////////////////////////////////////////////////////////
+
+
+
+
 namespace blockcraft
 {
 
@@ -23,6 +39,10 @@ namespace blockcraft
 
 		glr::renderer* _renderer;
 		world* _world;
+
+
+		// Temporary camera controller for debugging purposes.
 		blockcraft::spectatorCameraController* _controller;
+
 	};
 }

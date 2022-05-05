@@ -1,8 +1,7 @@
 #pragma once
 
-#include "glm/glm.hpp"
 #include "engine.h"
-#include "blocktexturelibrary.h"
+#include "blocktlibrary.h"
 
 namespace blockcraft
 {

@@ -1,6 +1,6 @@
 #pragma once
+
 #include "engine.h"
-#include "glm/glm.hpp"
 
 namespace blockcraft
 {

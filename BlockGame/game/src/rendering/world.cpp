@@ -242,10 +242,12 @@ namespace blockcraft
 	chunk* world::getChunkFromPosition(const glm::vec2& chunkPosition)
 	{
 
-		// check if chunk exists at position.
+		// Check if chunk exists at position.
 		if (_chunkMap.find(chunkPosition.x * MAX_WORLD_CHUNK_SIZE + chunkPosition.y) == _chunkMap.end())
 			return nullptr;
 
+
+		// Return chunk from position.
 		return _chunkMap[chunkPosition.x * MAX_WORLD_CHUNK_SIZE + chunkPosition.y];
 	}
 }

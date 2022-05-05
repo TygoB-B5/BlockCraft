@@ -1,6 +1,5 @@
 #include "game.h"
 
-#include <thread>
 
 namespace blockcraft
 {
@@ -13,6 +12,7 @@ namespace blockcraft
 		settings.ClearColor = { 0.5f, 0.5f, 1.0f, 1.0f };
 		settings.CullingMode = glr::renderer::rendererSettings::cullingMode::Back;
 		settings.DepthTestingMode = glr::renderer::rendererSettings::depthTestingMode::Less;
+
 
 		// Create renderer object.
 		_renderer = new glr::renderer(glr::window(1280, 720, "My window", false), settings);

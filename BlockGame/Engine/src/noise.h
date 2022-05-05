@@ -5,6 +5,7 @@
 
 namespace glr
 {
+	// Needs to be extended for procedual noise generation.
 
 	class perlinnoise1d
 	{
@@ -73,6 +74,14 @@ namespace glr
 		float* _outputs;
 		uint32_t _size;
 	};
+
+
+
+	// Needs to be extended for procedual noise generation.
+
+	//////////////////////////////////////////////////////////////////
+	// Inspired by Olc: https://www.youtube.com/watch?v=6-0UaeJBumA //
+	//////////////////////////////////////////////////////////////////
 
 	class perlinnoise2d
 	{

@@ -1,14 +1,8 @@
 #pragma once
 
-#include "block/blocktexturelibrary.h"
-#include "block/block.h"
 #include "world.h"
-#include "glm/glm.hpp"
-#include <vector>
-
-#define CHUNK_HEIGHT 16
-#define CHUNK_SIZE 16
-
+#include "block/blocktlibrary.h"
+#include "block/block.h"
 
 namespace blockcraft
 {
@@ -28,32 +22,43 @@ namespace blockcraft
 
 		inline void constructRenderingData();
 
+
+		// Visibility 
+
 		inline void updateVisibilityDataForBlock(uint8_t x, uint8_t y, uint8_t z);
+
+		inline void calculateAllBlockVisibility();
+		inline void calculateEdgeBlockVisibility();
+		inline void calculateSurroundingBlockVisibility(uint8_t x, uint8_t y, uint8_t z);
+
 
 		inline uint8_t getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint8_t x, uint8_t y, uint8_t z);
 
-		inline void calculateAllBlockVisibility();
-
-		inline void calculateEdgeBlockVisibility();
+		void updateSurroundingChunks();
 
 	public:
 
-		void updateSurroundingChunks();
+
+
+		// Getters
 
 		std::pair<float*, uint32_t> getChunkVertexData();
-
 		std::pair<uint32_t*, uint32_t> getChunkIndexData();
-
-		glm::mat4 getModelMatrix() const;
-
-		void setBlock(uint8_t x, uint8_t y, uint8_t z, uint8_t id);
 
 		bool getHasNewVertexData() const { return _hasNewVertexData; }
 		bool getHasNewIndexData() const { return _hasNewIndexData; }
 
+		glm::mat4 getModelMatrix() const;
+
 		glm::vec2 getChunkPosition() const { return _chunkPosition; }
 
  		inline uint8_t getBlockDataAtPosition(uint8_t x, uint8_t y, uint8_t z) const { return _blockData[x][y][z]; }
+
+		
+		// Other
+
+		void setBlock(uint8_t x, uint8_t y, uint8_t z, uint8_t id);
+
 
 	private:
 
@@ -61,11 +66,10 @@ namespace blockcraft
 		bool _hasNewIndexData, _hasNewVertexData;
 
 		blockVertex _blockVertices[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
-		uint32_t _blockIndices[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6];
+		uint32_t _blockElements[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE * 6];
 
 		uint32_t _blockVerticesSize;
-		uint32_t _blockIndicesSize;
-
+		uint32_t _blockElementsSize;
 
 
 		// Block data and block visibility.
@@ -77,8 +81,10 @@ namespace blockcraft
 		glm::vec2 _chunkPosition;
 		chunk* _cachedChunk;
 
+
 		// Ptr to base world used to interact with other chunks.
 		world* _world;
+
 
 		// Noise ptr used for world generation.
 		glr::perlinnoise1d* _noise;
