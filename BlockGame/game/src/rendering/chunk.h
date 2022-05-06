@@ -39,7 +39,6 @@ namespace blockcraft
 	public:
 
 
-
 		// Getters
 
 		std::pair<float*, uint32_t> getChunkVertexData();
@@ -52,13 +51,9 @@ namespace blockcraft
 
 		glm::vec2 getChunkPosition() const { return _chunkPosition; }
 
- 		inline uint8_t getBlockDataAtPosition(uint8_t x, uint8_t y, uint8_t z) const { return _blockData[x][y][z]; }
-
-		
-		// Other
+		uint8_t getBlock(uint8_t x, uint8_t y, uint8_t z) const { return _blockData[x][y][z]; }
 
 		void setBlock(uint8_t x, uint8_t y, uint8_t z, uint8_t id);
-
 
 	private:
 

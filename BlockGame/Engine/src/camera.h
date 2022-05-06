@@ -2,12 +2,13 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
-namespace blockcraft
+namespace glr
 {
-	class spectatorCamera
+	class perspectiveCamera
 	{
 	public:
-		spectatorCamera(float fov, float aspectRatio, float zNear, float zFar);
+
+		perspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
 
 		void setProjection(float fov, float aspectRatio, float zNear, float zFar);
 

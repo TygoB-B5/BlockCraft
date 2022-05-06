@@ -254,7 +254,7 @@ namespace blockcraft
 		// If chunk is found return id from the specified position.
 		if (c)
 		{
-			return c->getBlockDataAtPosition(x, y, z);
+			return c->getBlock(x, y, z);
 		}
 			
 		return UCHAR_MAX;

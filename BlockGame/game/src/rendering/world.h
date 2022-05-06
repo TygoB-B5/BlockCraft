@@ -38,9 +38,13 @@ namespace blockcraft
 		chunk* addChunk(const glm::vec2& cords);
 		void removeChunk(const glm::vec2& cords);
 
-		void draw(const spectatorCamera* camera, const glr::renderer* renderer);
+		void draw(const glr::perspectiveCamera* camera, const glr::renderer* renderer);
 
 		void setBlock(int32_t x, uint8_t y, int32_t z, uint8_t id);
+
+		uint8_t getBlock(int32_t x, uint8_t y, int32_t z);
+
+		void coordToChunkCoord(chunk** chunkRef, int32_t* x, uint8_t* y, int32_t* z);
 
 		const std::map<int, chunk*>* getChunks() const { return &_chunkMap; }
 

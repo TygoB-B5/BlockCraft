@@ -9,7 +9,7 @@ namespace blockcraft
 	public:
 
 		spectatorCameraController(glr::input* input, float fov, float aspectRatio, float zNear, float zFar)
-			: _aspectRatio(aspectRatio), _fov(fov), _near(zNear), _far(zFar), _camera(glm::radians(_fov), _aspectRatio, _near, _far), _input(input)
+			: _aspectRatio(aspectRatio), _fov(fov), _near(zNear), _far(zFar), _camera(_fov, _aspectRatio, _near, _far), _input(input)
 		{}
 
 		void update(float deltaTime);
@@ -20,7 +20,7 @@ namespace blockcraft
 		const glm::vec3& getForward();
 		const glm::vec3& getRight();
 		const glm::vec3& getUp();
-		const spectatorCamera& getCamera() { return _camera; }
+		const glr::perspectiveCamera& getCamera() { return _camera; }
 
 	private:
 
@@ -29,7 +29,7 @@ namespace blockcraft
 		float _near;
 		float _far;
 
-		spectatorCamera _camera;
+		glr::perspectiveCamera _camera;
 		glr::input* _input;
 
 		glm::vec3 _cameraPosition = { 0.0f, 0.0f, 0.0f };

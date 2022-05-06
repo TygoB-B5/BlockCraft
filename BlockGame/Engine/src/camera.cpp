@@ -1,16 +1,16 @@
 #include "camera.h"
 #include "glm/gtc/matrix_transform.hpp"
 
-namespace blockcraft
+namespace glr
 {
 
-	spectatorCamera::spectatorCamera(float fov, float aspectRatio, float zNear, float zFar)
-		: _projectionMatrix(glm::perspective(fov, aspectRatio, zNear, zFar)), _viewMatrix(glm::mat4(1.0f)), _position(glm::vec3(0)), _rotation(glm::vec3(0))
+	perspectiveCamera::perspectiveCamera(float fov, float aspectRatio, float zNear, float zFar)
+		: _projectionMatrix(glm::perspective(glm::radians(fov), aspectRatio, zNear, zFar)), _viewMatrix(glm::mat4(1.0f)), _position(glm::vec3(0)), _rotation(glm::vec3(0))
 	{
 		_viewProjectionMatrix = _projectionMatrix * _viewMatrix;
 	}
 
-	void spectatorCamera::setProjection(float fov, float aspectRatio, float zNear, float zFar)
+	void perspectiveCamera::setProjection(float fov, float aspectRatio, float zNear, float zFar)
 	{
 
 		// Calculate and set new perspective projection.
@@ -19,7 +19,7 @@ namespace blockcraft
 
 	}
 
-	void spectatorCamera::recalculateViewMatrix()
+	void perspectiveCamera::recalculateViewMatrix()
 	{
 
 		// Calculate viewmatrix.

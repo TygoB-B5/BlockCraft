@@ -49,7 +49,7 @@ namespace blockcraft
 			for (int z = -64; z < 64; z++)
 			{
 				glm::vec2 pos = { x * CHUNK_SIZE, z * CHUNK_SIZE };
-				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 256;
+				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 32;
 				 
 				if (inRange && !_world->getChunkFromPosition({ x, z }))
 				{
@@ -71,7 +71,9 @@ namespace blockcraft
 			int x = _controller->getCamera().getPosition().x;
 			int y = _controller->getCamera().getPosition().y;
 			int z = _controller->getCamera().getPosition().z;
-			_world->setBlock(x, y, z, ID_BLOCK_GRASS);
+
+			if(_world->getBlock(x, y, z) == 0)
+				GLR_LOG("aMOGUS")
 		}
 
 
