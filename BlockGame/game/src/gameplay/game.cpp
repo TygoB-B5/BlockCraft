@@ -9,7 +9,7 @@ namespace blockcraft
 	{
 		// Create rendersettings.
 		glr::renderer::rendererSettings settings = glr::renderer::rendererSettings();
-		settings.ClearColor = { 0.5f, 0.5f, 1.0f, 1.0f };
+		settings.ClearColor = { 0.65f, 0.75f, 1.0f, 1.0f };
 		settings.CullingMode = glr::renderer::rendererSettings::cullingMode::Back;
 		settings.DepthTestingMode = glr::renderer::rendererSettings::depthTestingMode::Less;
 
@@ -49,7 +49,7 @@ namespace blockcraft
 			for (int z = -64; z < 64; z++)
 			{
 				glm::vec2 pos = { x * CHUNK_SIZE, z * CHUNK_SIZE };
-				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128;
+				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 256;
 				 
 				if (inRange && !_world->getChunkFromPosition({ x, z }))
 				{

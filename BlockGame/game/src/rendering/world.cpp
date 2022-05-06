@@ -10,6 +10,7 @@ namespace blockcraft
 		layout (location = 1) in vec2 aTexCoord;
 
 		out vec2 oTexCoord;
+		out float oDepth;
 		uniform mat4 uViewMatrix;
 		uniform mat4 uModelMatrix;
 
@@ -18,6 +19,7 @@ namespace blockcraft
 			vec4 pos = uViewMatrix * uModelMatrix * vec4(aPos.x, aPos.y, aPos.z, 1.0);
 			gl_Position = pos;
 			oTexCoord = aTexCoord;
+			oDepth = pos.z;
 		}
 
 		)";
@@ -30,11 +32,18 @@ namespace blockcraft
 		out vec4 FragColor;
 
 		in vec2 oTexCoord;
+		in float oDepth;
 		uniform sampler2D uTexture;
+		
 
 		void main()
 		{
-			FragColor = texture(uTexture, oTexCoord);
+			float FOG_DISTANCE = 3024;
+
+			float intensity = clamp(oDepth / FOG_DISTANCE, 0, 1); 
+			vec4 col = mix( texture(uTexture, oTexCoord), vec4(0.65f, 0.75f, 1.0f, 1), intensity );
+			
+			FragColor = col;
 		}
 
 )";
