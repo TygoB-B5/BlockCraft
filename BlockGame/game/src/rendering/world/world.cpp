@@ -212,14 +212,32 @@ namespace blockcraft
 
 	uint8_t world::getBlock(int32_t x, uint8_t y, int32_t z)
 	{
+		// Convert coordinates and ptr to local chunk coordinate
 		chunk* c = nullptr;
 		coordToChunkCoord(&c, &x, &y, &z);
 
+		// 
 		if (c)
 		{
 			return c->getBlock(x, y, z);
 		}
 
+		return UCHAR_MAX;
+	}
+
+	uint8_t world::getBlockLocal(const glm::vec2& chunkPosition, int16_t x, uint8_t y, int16_t z)
+	{
+		// Get chunk from position.
+		chunk* c = getChunkFromPosition(chunkPosition);;
+
+
+		// If chunk is found return id from the specified position.
+		if (c)
+		{
+			return c->getBlock(x, y, z);
+		}
+
+		return UCHAR_MAX;
 	}
 
 	// Chunk ptr validates if position is valid
@@ -234,9 +252,9 @@ namespace blockcraft
 
 #endif
 
-			// Ignore if block is placed above the maximum chunk height.
-			if (*y >= CHUNK_HEIGHT)
-				return;
+		// Ignore if block is placed above the maximum chunk height.
+		if (*y >= CHUNK_HEIGHT)
+			return;
 
 
 		// Get positive chunk position data.
@@ -250,8 +268,6 @@ namespace blockcraft
 
 		// Set block on right chunk based on data.
 		chunk* chunk = getChunkFromPosition({ chunkX, chunkZ });
-
-		GLR_CORE_ASSERT(chunk, "Block position outside of loaded chunk range");
 
 		if (chunk)
 		{
@@ -281,5 +297,29 @@ namespace blockcraft
 
 		// Return chunk from position.
 		return _chunkMap[chunkPosition.x * MAX_WORLD_CHUNK_SIZE + chunkPosition.y];
+	}
+
+	const std::vector<glr::elementBuffer*> world::getElementBuffers() const
+	{
+		std::vector<glr::elementBuffer*> buffers;
+
+		for (auto& buffer : _chunkElementBuffers)
+		{
+			buffers.push_back(buffer.second);
+		}
+
+		return buffers;
+	}
+
+	const std::vector<glr::vertexBuffer*> world::getVertexBuffers() const
+	{
+		std::vector<glr::vertexBuffer*> buffers;
+
+		for (auto& buffer : _chunkVertexBuffer)
+		{
+			buffers.push_back(buffer.second);
+		}
+
+		return buffers;
 	}
 }

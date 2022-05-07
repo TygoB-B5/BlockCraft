@@ -1,7 +1,10 @@
 #pragma once
 
 #include "engine.h"
-#include "../rendering/world.h"
+#include "world/world.h"
+
+#define PLAYER_HEIGHT 1.5f
+#define WALK_SPEED 4.0f
 
 namespace blockcraft
 {
@@ -10,7 +13,7 @@ namespace blockcraft
 	public:
 
 		player(glr::input* input, world* world)
-			: _camera(glm::radians(100.0f), 16.0f/9.0f, 0.001f, 10000.0f), _input(input), _world(world)
+			: _camera(100.0f, 16.0f/9.0f, 0.001f, 10000.0f), _input(input), _world(world)
 		{}
 
 		void update(float deltaTime);
@@ -26,13 +29,17 @@ namespace blockcraft
 		bool isGrounded();
 		bool isSolidBlock(int32_t x, uint8_t y, int32_t z);
 
+	private:
 
 		glr::perspectiveCamera _camera;
 		glr::input* _input;
 
 		world* _world;
 
-		glm::vec3 _cameraPosition = { 0.0f, 0.0f, 0.0f };
-		glm::vec3 _cameraRotation = { 0.0f, 0.0f, 0.0f };
+		float _sensitivity = 0.5f;
+		glm::vec2 _mouseAcceleration = { 0.0f, 0.0f };
+
+		glm::vec3 _position = { 0.0f, 100.0f, 0.0f };
+		glm::vec3 _rotation = { 0.0f, 0.0f, 0.0f };
 	};
 }

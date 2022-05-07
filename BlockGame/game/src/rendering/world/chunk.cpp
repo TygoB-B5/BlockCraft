@@ -6,7 +6,7 @@ namespace blockcraft
 {
 
 	chunk::chunk(const glm::vec2& cord, world* world)
-		: _chunkPosition(cord), _world(world), _hasNewVertexData(false), _hasNewIndexData(false), _cachedChunk(this)
+		: _chunkPosition(cord), _world(world), _hasNewVertexData(false), _hasNewIndexData(false)
 	{}
 
 	void chunk::init()
@@ -244,22 +244,6 @@ namespace blockcraft
 		}
 	}
 
-	uint8_t chunk::getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint8_t x, uint8_t y, uint8_t z)
-	{
-	
-		// Get chunk from position.
-		chunk* c = _world->getChunkFromPosition(chunkPosition);;
-
-
-		// If chunk is found return id from the specified position.
-		if (c)
-		{
-			return c->getBlock(x, y, z);
-		}
-			
-		return UCHAR_MAX;
-	}
-
 	void chunk::updateSurroundingChunks()
 	{
 
@@ -346,25 +330,25 @@ namespace blockcraft
 		if (x > 0)
 			_visibleSides[z][y][x][2] = blockData::isTransparent(_blockData[x - 1][y][z]);
 		else
-			_visibleSides[z][y][x][2] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x - 1, _chunkPosition.y }, CHUNK_SIZE - 1, y, z));
+			_visibleSides[z][y][x][2] = blockData::isTransparent(_world->getBlockLocal({ _chunkPosition.x - 1, _chunkPosition.y }, CHUNK_SIZE - 1, y, z));
 
 		// Right
 		if (x < CHUNK_SIZE - 1)
 			_visibleSides[z][y][x][3] = blockData::isTransparent(_blockData[x + 1][y][z]);
 		else
-			_visibleSides[z][y][x][3] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x + 1, _chunkPosition.y }, 0, y, z));
+			_visibleSides[z][y][x][3] = blockData::isTransparent(_world->getBlockLocal({ _chunkPosition.x + 1, _chunkPosition.y }, 0, y, z));
 
 		// Front
 		if (z > 0)
 			_visibleSides[z][y][x][4] = blockData::isTransparent(_blockData[x][y][z - 1]);
 		else
-			_visibleSides[z][y][x][4] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y - 1 }, x, y, CHUNK_SIZE - 1));
+			_visibleSides[z][y][x][4] = blockData::isTransparent(_world->getBlockLocal({ _chunkPosition.x, _chunkPosition.y - 1 }, x, y, CHUNK_SIZE - 1));
 
 		// Back
 		if (z < CHUNK_SIZE - 1)
 			_visibleSides[z][y][x][5] = blockData::isTransparent(_blockData[x][y][z + 1]);
 		else
-			_visibleSides[z][y][x][5] = blockData::isTransparent(getBlockIdFromDifferentChunk({ _chunkPosition.x, _chunkPosition.y + 1 }, x, y, 0));
+			_visibleSides[z][y][x][5] = blockData::isTransparent(_world->getBlockLocal({ _chunkPosition.x, _chunkPosition.y + 1 }, x, y, 0));
 
 	}
 

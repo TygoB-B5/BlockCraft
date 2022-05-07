@@ -1,9 +1,8 @@
 #pragma once
 #include "engine.h"
-#include "rendering/world.h"
-#include "gameplay/spectatorcameracontroller.h"
-
-
+#include "world/world.h"
+#include "player.h"
+#include "spectatorcameracontroller.h"
 
 
 	////////////////////////////////////////////////////////////

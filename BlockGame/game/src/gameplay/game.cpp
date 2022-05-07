@@ -7,6 +7,7 @@ namespace blockcraft
 	game::game()
 		: _running(true)
 	{
+
 		// Create rendersettings.
 		glr::renderer::rendererSettings settings = glr::renderer::rendererSettings();
 		settings.ClearColor = { 0.65f, 0.75f, 1.0f, 1.0f };
@@ -22,7 +23,7 @@ namespace blockcraft
 		_world = new world(34535);
 
 		// Create spectator controller.
-		_controller = new spectatorCameraController(_renderer->getInput(), 100, (float)_renderer->getWindow().getWidth() / (float)_renderer->getWindow().getHeight(), 0.001f, 10000);
+		_controller = new spectatorCameraController(_renderer->getInput(), 100, 16.0f/9.0f, 0.0001f, 10000.0f);
 
 	}
 
@@ -49,7 +50,7 @@ namespace blockcraft
 			for (int z = -64; z < 64; z++)
 			{
 				glm::vec2 pos = { x * CHUNK_SIZE, z * CHUNK_SIZE };
-				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 32;
+				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128;
 				 
 				if (inRange && !_world->getChunkFromPosition({ x, z }))
 				{
@@ -64,7 +65,7 @@ namespace blockcraft
 			}
 		}
 
-		GLR_LOG(_controller->getCamera().getPosition().x << " - " << _controller->getCamera().getPosition().z)
+		GLR_LOG(_controller->getCamera().getPosition().x << " - " << _controller->getCamera().getPosition().y << " - " << _controller->getCamera().getPosition().z)
 		
 		if (_renderer->getInput()->isKeyHeld(KEY_SPACE))
 		{
@@ -72,8 +73,7 @@ namespace blockcraft
 			int y = _controller->getCamera().getPosition().y;
 			int z = _controller->getCamera().getPosition().z;
 
-			if(_world->getBlock(x, y, z) == 0)
-				GLR_LOG("aMOGUS")
+			_world->setBlock(x, y, z, 1);	
 		}
 
 

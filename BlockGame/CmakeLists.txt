@@ -14,9 +14,10 @@ game/src/*.h
 add_executable(${PROJECT_NAME} ${MCR_SOURCES})
 
 target_include_directories(${PROJECT_NAME} 
-PUBLIC game/src
+PUBLIC game/src/rendering
+PUBLIC game/src/gameplay
 )
 
-message("-- ||| Thank you for checking out my "Blockcraft" Project C: <3 |||")
+message("-- ||| Thank you for checking out Blockcraft C: <3 |||")
 
 target_link_libraries(${PROJECT_NAME} engine)

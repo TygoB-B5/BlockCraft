@@ -1,4 +1,7 @@
 #include "renderer.h"
+#include "renderer.h"
+#include "renderer.h"
+#include "renderer.h"
 #include <iostream>
 #include "core.h"
 

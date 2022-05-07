@@ -22,37 +22,39 @@ namespace blockcraft
 
 		inline void constructRenderingData();
 
-
-		// Visibility 
-
 		inline void updateVisibilityDataForBlock(uint8_t x, uint8_t y, uint8_t z);
-
 		inline void calculateAllBlockVisibility();
 		inline void calculateEdgeBlockVisibility();
 		inline void calculateSurroundingBlockVisibility(uint8_t x, uint8_t y, uint8_t z);
-
-
-		inline uint8_t getBlockIdFromDifferentChunk(const glm::vec2& chunkPosition, uint8_t x, uint8_t y, uint8_t z);
-
-		void updateSurroundingChunks();
+		inline void updateSurroundingChunks();
 
 	public:
 
 
 		// Getters
 
+		// Returns the chunk's raw vertex buffer data.
 		std::pair<float*, uint32_t> getChunkVertexData();
+
+		// Returns the chunk's raw index buffer data.
 		std::pair<uint32_t*, uint32_t> getChunkIndexData();
 
+		// Returns if the chunk has new vertex data.
 		bool getHasNewVertexData() const { return _hasNewVertexData; }
+
+		// Returns if the chunk has new index data.
 		bool getHasNewIndexData() const { return _hasNewIndexData; }
 
+		// Returns the location of the chunk in a matrix.
 		glm::mat4 getModelMatrix() const;
 
+		// Returns the global of the chunk.
 		glm::vec2 getChunkPosition() const { return _chunkPosition; }
 
+		// Returns the Block ID from  the chunk's coordinate system. ( 0, 0, 0 to Chunksize, ChunkHeight, ChunkSize )
 		uint8_t getBlock(uint8_t x, uint8_t y, uint8_t z) const { return _blockData[x][y][z]; }
 
+		// Replaces the block from withing the chunk's coordinate system. ( 0, 0, 0 to Chunksize, ChunkHeight, ChunkSize )
 		void setBlock(uint8_t x, uint8_t y, uint8_t z, uint8_t id);
 
 	private:
@@ -74,7 +76,6 @@ namespace blockcraft
 		
 		// Chunk data
 		glm::vec2 _chunkPosition;
-		chunk* _cachedChunk;
 
 
 		// Ptr to base world used to interact with other chunks.
@@ -83,8 +84,6 @@ namespace blockcraft
 
 		// Noise ptr used for world generation.
 		glr::perlinnoise1d* _noise;
-
-
 
 	};
 

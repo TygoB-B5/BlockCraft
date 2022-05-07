@@ -10,6 +10,10 @@
 #define DEBUG_ONLY(expression)
 #endif
 
+#ifndef _WINDOWS
+#error GLR only supports windows!
+#endif
+
 #include <iostream>
 
 #ifdef GLR_DEBUG
