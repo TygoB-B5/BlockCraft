@@ -39,6 +39,7 @@ namespace blockcraft
 		glr::renderer* _renderer;
 		world* _world;
 
+		blockcraft::player* _player;
 
 		// Temporary camera controller for debugging purposes.
 		blockcraft::spectatorCameraController* _controller;

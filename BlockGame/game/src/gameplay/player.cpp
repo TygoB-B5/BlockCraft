@@ -23,7 +23,6 @@ namespace blockcraft
 		if (_input->isKeyHeld(KEY_A))
 			_position += glm::vec3(getRight().x, 0, getRight().z) * WALK_SPEED * deltaTime;
 
-
 		// Update mouse movement.
 		glm::vec2 newMousePos = { _input->getMouseY(), _input->getMouseX() };
 		glm::vec2 acceleration = (_mouseAcceleration - newMousePos) * _sensitivity;
@@ -33,16 +32,44 @@ namespace blockcraft
 		_camera.setRotation(_rotation);
 	}
 
+	void player::positionToBlockCoord(float* x, float* y, float* z)
+	{
+
+		// Get positive block position with correction.
+		int32_t blockX = round(abs(*x - 0.5f));
+		int32_t blockY = round(abs(*y - 0.5f));
+		int32_t blockZ = round(abs(*z - 0.5f));
+
+
+		// Reverse position if initial position was negative.
+		blockX = *x < 0 ? -blockX : blockX;
+		blockY = *y < 0 ? -blockY : blockY;
+		blockZ = *z < 0 ? -blockZ : blockZ;
+
+
+		// Set position ptrs.
+		*x = blockX;
+		*y = blockY;
+		*z = blockZ;
+
+	}
+
 	bool player::isGrounded()
 	{
-		bool a = isSolidBlock(_position.x - 0.5f, _position.y - PLAYER_HEIGHT, _position.z - 0.5f);
-		if (a) _world->setBlock(_position.x - 0.5f, _position.y - PLAYER_HEIGHT, _position.z - 0.5f, 3);
+		float x = _position.x;
+		float y = _position.y - PLAYER_HEIGHT;
+		float z = _position.z;
+
+		positionToBlockCoord(&x, &y, &z);
+
+		bool a = isSolidBlock(x, y, z);
+		if (a) _world->setBlock(x, y, z, 3);
 		return a;
 	}
 
 	bool player::isSolidBlock(int32_t x, uint8_t y, int32_t z)
 	{
-		return !blockData::isTransparent(_world->getBlock(x, y, z));
+		return blockData::isSolid(_world->getBlock(x, y, z));
 	}
 
 	const glm::vec3& player::getForward()

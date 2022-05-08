@@ -147,7 +147,6 @@ namespace blockcraft
 		_chunkElementBuffers.erase(chunk);
 		_chunkVertexBuffer.erase(chunk);
 
-		return;
 	}
 
 	void world::draw(const glr::perspectiveCamera* camera, const glr::renderer* renderer)
@@ -201,7 +200,7 @@ namespace blockcraft
 	void world::setBlock(int32_t x, uint8_t  y, int32_t z, uint8_t id)
 	{
 		chunk* c = nullptr;
-		coordToChunkCoord(&c, &x, &y, &z);
+		globalCoordToChunkCoord(&c, &x, &y, &z);
 
 		if (c)
 		{
@@ -214,7 +213,7 @@ namespace blockcraft
 	{
 		// Convert coordinates and ptr to local chunk coordinate
 		chunk* c = nullptr;
-		coordToChunkCoord(&c, &x, &y, &z);
+		globalCoordToChunkCoord(&c, &x, &y, &z);
 
 		// 
 		if (c)
@@ -241,7 +240,7 @@ namespace blockcraft
 	}
 
 	// Chunk ptr validates if position is valid
-	void world::coordToChunkCoord(chunk** chunkRef, int32_t* x, uint8_t* y, int32_t* z)
+	void world::globalCoordToChunkCoord(chunk** chunkRef, int32_t* x, uint8_t* y, int32_t* z)
 	{
 
 #ifdef GLR_DEBUG

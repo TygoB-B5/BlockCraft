@@ -26,6 +26,8 @@ namespace blockcraft
 
 	private:
 
+		void positionToBlockCoord(float* x, float* y, float* z);
+
 		bool isGrounded();
 		bool isSolidBlock(int32_t x, uint8_t y, int32_t z);
 
@@ -39,7 +41,7 @@ namespace blockcraft
 		float _sensitivity = 0.5f;
 		glm::vec2 _mouseAcceleration = { 0.0f, 0.0f };
 
-		glm::vec3 _position = { 0.0f, 100.0f, 0.0f };
+		glm::vec3 _position = { 0.0f, 20.0f, 0.0f };
 		glm::vec3 _rotation = { 0.0f, 0.0f, 0.0f };
 	};
 }

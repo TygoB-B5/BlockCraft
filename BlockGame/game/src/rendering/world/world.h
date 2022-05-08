@@ -9,7 +9,7 @@
 //
 
 
-#define CHUNK_HEIGHT 64
+#define CHUNK_HEIGHT 16
 #define CHUNK_SIZE 16
 
 #define MAX_WORLD_CHUNK_SIZE SHRT_MAX
@@ -55,7 +55,7 @@ namespace blockcraft
 		uint8_t getBlockLocal(const glm::vec2& chunkPosition, int16_t x, uint8_t y, int16_t z);
 
 		// Converts global coordinate to local chunk coordinate and gives a ptr to the chunk.
-		void coordToChunkCoord(chunk** chunkRef, int32_t* x, uint8_t* y, int32_t* z);
+		void globalCoordToChunkCoord(chunk** chunkRef, int32_t* x, uint8_t* y, int32_t* z);
 
 		// Returns all the chunks.
 		const std::map<int, chunk*>* getChunks() const { return &_chunkMap; }

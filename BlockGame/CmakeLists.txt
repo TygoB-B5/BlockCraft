@@ -6,16 +6,17 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE
 
 add_subdirectory(engine)
 
-file(GLOB_RECURSE MCR_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE BLC_SOURCES CONFIGURE_DEPENDS
 game/src/*.cpp
 game/src/*.h
 )
 
-add_executable(${PROJECT_NAME} ${MCR_SOURCES})
+add_executable(${PROJECT_NAME} ${BLC_SOURCES})
 
 target_include_directories(${PROJECT_NAME} 
 PUBLIC game/src/rendering
 PUBLIC game/src/gameplay
+PUBLIC game/src/physics
 )
 
 message("-- ||| Thank you for checking out Blockcraft C: <3 |||")

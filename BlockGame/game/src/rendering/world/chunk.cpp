@@ -46,7 +46,8 @@ namespace blockcraft
 		{
 			for (uint8_t z = 0; z < CHUNK_SIZE; z++)
 			{
-				int h = noise->getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * CHUNK_HEIGHT - 1;
+				int h = noise->getHeightAtPosition(x + (CHUNK_SIZE * _chunkPosition.x), z + (CHUNK_SIZE * _chunkPosition.y)) * (CHUNK_HEIGHT - 1);
+
 				_blockData[x][h][z] = ID_BLOCK_GRASS;
 
 				for (uint8_t i = 0; i < h; i++)

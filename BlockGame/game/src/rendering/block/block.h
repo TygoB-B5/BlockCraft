@@ -14,6 +14,14 @@ namespace blockcraft
 
 			return false;
 		}
+
+		static inline bool isSolid(uint8_t id)
+		{
+			if (id != UCHAR_MAX && id != ID_BLOCK_AIR)
+				return true;
+
+			return false;
+		}
 	};
 
 	// Constants
