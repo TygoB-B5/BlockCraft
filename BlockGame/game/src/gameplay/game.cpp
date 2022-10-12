@@ -7,7 +7,7 @@ namespace blockcraft
 	game::game()
 		: _running(true)
 	{
-
+			
 		// Create rendersettings.
 		glr::renderer::rendererSettings settings = glr::renderer::rendererSettings();
 		settings.ClearColor = { 0.65f, 0.75f, 1.0f, 1.0f };
@@ -50,7 +50,7 @@ namespace blockcraft
 			for (int z = -64; z < 64; z++)
 			{
 				glm::vec2 pos = { x * CHUNK_SIZE, z * CHUNK_SIZE };
-				bool inRange = glm::distance(pos, { _player->getCamera().getPosition().x, _player->getCamera().getPosition().z }) < 128;
+				bool inRange = glm::distance(pos, { _controller->getCamera().getPosition().x, _controller->getCamera().getPosition().z }) < 128;
 				 
 				if (inRange && !_world->getChunkFromPosition({ x, z }))
 				{
@@ -78,7 +78,7 @@ namespace blockcraft
 
 
 
-		_world->draw(&_player->getCamera(), _renderer);
+		_world->draw(&_controller->getCamera(), _renderer);
 
 		_renderer->update();
 

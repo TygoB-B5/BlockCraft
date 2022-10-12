@@ -2,7 +2,7 @@
 
 #include "engine.h"
 
-#define BLOCK_TEXTURE_FILE_NAME "resources/minecraft.jpg"
+#define BLOCK_TEXTURE_FILE_NAME "resources/minecraft.png"
 #define BLOCK_TEXTURE_SIZE 16
 
 

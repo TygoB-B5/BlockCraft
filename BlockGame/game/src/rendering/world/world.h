@@ -9,7 +9,7 @@
 //
 
 
-#define CHUNK_HEIGHT 16
+#define CHUNK_HEIGHT 64
 #define CHUNK_SIZE 16
 
 #define MAX_WORLD_CHUNK_SIZE SHRT_MAX
